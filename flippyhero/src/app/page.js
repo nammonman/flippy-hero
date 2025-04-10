@@ -1,48 +1,89 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
+import { GameStateProvider, useGameState } from './GameContext';
 
-function GameGrid({ isWideScreen }) {
+/*function GameGrid() {
+  const { isWideScreen, isZoomed } = useGameState();
   return (
-    <div className={`relative grid grid-cols-100 gap-0 aspect-square ${isWideScreen ? 'h-[78vh]' : 'h-[49vh]'} shadow-lg shadow-amber-200`}>
-      {Array(10000).fill().map((_, i) => {
-        const row = Math.floor(i / 100);
+    <div className={`relative grid ${isZoomed? 'grid-cols-10' : 'grid-cols-100'} gap-0 aspect-square ${isWideScreen ? 'h-[78vh]' : 'h-[49vh]'} shadow-lg shadow-amber-200 `}>
+      {Array(isZoomed? 100 : 10000).fill().map((_, i) => {
+        const row = Math.floor(i / (isZoomed? 10 : 100));
         const isEven = (row % 2 === 0 && i % 2 === 0) || (row % 2 === 1 && i % 2 === 1);
         return (
           <div 
             key={i}
-            className={`h-[1/2vh] w-[1/2vh] ${isEven ? 'bg-gray-200' : 'bg-gray-400'}`}
+            className={`h-full aspect-square ${isEven ? 'bg-gray-200' : 'bg-gray-400'}`}
           ></div>
         );
       })}
+      
     </div>
+  );
+}*/
+
+function GameGrid() {
+  const { isWideScreen, isZoomed } = useGameState();
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const gridSize = isZoomed ? 10 : 100;
+
+    canvas.width = canvas.offsetWidth;
+    canvas.height = canvas.offsetHeight;
+    const tileSize = Math.ceil(canvas.width / gridSize);
+
+    for (let row = 0; row < gridSize; row++) {
+      for (let col = 0; col < gridSize; col++) {
+        const isEven = (row % 2 === 0 && col % 2 === 0) || (row % 2 === 1 && col % 2 === 1);
+        ctx.fillStyle = isEven ? '#e5e7eb' : '#9ca3af';
+        ctx.fillRect(col * tileSize, row * tileSize, tileSize, tileSize);
+      }
+    }
+  }, [isZoomed]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className={`relative aspect-square ${isWideScreen ? 'h-[78vh]' : 'h-[49vh]'} shadow-lg shadow-amber-200`}
+    />
   );
 }
 
-function DPad({ isWideScreen }) {
+function DPad() {
+  const { isWideScreen, isZoomed} = useGameState();
   const btnSize = isWideScreen ? 'h-[8vh] w-[8vh]' : 'h-[7vh] w-[7vh]';
   return (
     <div className={`relative w-[32vh] left-0 flex flex-col items-center sm:text-xl text-lg font-black`}>
-      <button className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}>U</button>
+      <button className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}>W</button>
       <div className="flex">
-        <button className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}>L</button>
+        <button className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}>A</button>
         <div className={`relative z-10 ${btnSize} bg-gray-500`}></div>
-        <button className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}>R</button>
+        <button className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}>D</button>
       </div>
-      <button className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}>D</button>
+      <button className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}>S</button>
     </div>
   );
 }
 
-function ActionButtons({ isWideScreen }) {
+function ActionButtons() {
+  const { isWideScreen, isZoomed, setIsZoomed } = useGameState();
   const btnSize = isWideScreen ? 'h-[14vh] w-[14vh]' : 'h-[10vh] w-[10vh]';
   return (
     <div className="flex flex-row gap-[5%] w-[32vh]"> 
       <div className="relative w-full right-0 flex flex-col items-center space-y-[20%] text-lg font-black">
-        <button className={` ${btnSize} bg-green-500 rounded-full shadow-amber-900 shadow-md active:shadow-sm`}>Z</button>
-        <button className={` ${btnSize} bg-blue-500 rounded-full shadow-amber-900 shadow-md active:shadow-sm`}>C</button>
+      <button 
+                className={` ${btnSize} bg-green-500 rounded-full shadow-amber-900 shadow-lg active:shadow-sm`}
+                onClick={() => setIsZoomed(!isZoomed)}
+        >Z</button>
+        <button 
+                className={` ${btnSize} bg-blue-500 rounded-full shadow-amber-900 shadow-lg active:shadow-sm`}
+                
+        >C</button>
       </div>
       <div className="relative w-full right-0 flex items-center space-y-[9%] space-x-[9%] text-lg font-black">
-        <button className={` ${btnSize} bg-red-500 rounded-full shadow-amber-900 shadow-md active:shadow-sm`}>A</button>
+        <button className={` ${btnSize} bg-red-500 rounded-full shadow-amber-900 shadow-lg active:shadow-sm`}>A</button>
       </div>
     </div>
   );
@@ -59,8 +100,8 @@ function SizeIndicator() {
   )
 }
 
-export default function Home() {
-  const [isWideScreen, setIsWideScreen] = useState(true);
+function Home() {
+  const { isWideScreen, setIsWideScreen, setIsZoomed } = useGameState();
 
   useEffect(() => {
     const checkAspectRatio = () => {
@@ -71,32 +112,37 @@ export default function Home() {
     checkAspectRatio();
     window.addEventListener('resize', checkAspectRatio);
     return () => window.removeEventListener('resize', checkAspectRatio);
-  }, []);
+  }, [setIsWideScreen]);
 
   return (
-    <main className="flex bg-gray-900 w-screen h-screen text-black overflow-hidden justify-center items-center">
+    <main className="flex bg-gray-900 w-screen h-screen text-black overflow-hidden justify-center items-center ">
       {isWideScreen ? (
-        <div className='bg-amber-300 rounded-4xl w-[160vh] h-[90vh] flex items-center'>
+        <div className='bg-amber-300 rounded-4xl w-[160vh] h-[90vh] flex items-center shadow-inner shadow-amber-700'>
           <div className='flex justify-between items-center p-[3%] space-x-[3%] w-full h-full'>
-            <DPad isWideScreen={isWideScreen}/>
-            <GameGrid isWideScreen={isWideScreen}/>
-            <ActionButtons isWideScreen={isWideScreen}/>
+            <DPad/>
+            <GameGrid/>
+            <ActionButtons/>
           </div>
         </div>
       ) : (
-        <div className='bg-amber-300 rounded-4xl h-[96vh] w-[54vh] justify-center items-center'>
+        <div className='bg-amber-300 rounded-4xl h-[96vh] w-[54vh] justify-center items-center shadow-inner shadow-amber-700'>
           <div className='flex justify-between items-center m-[5%] '>
-          <GameGrid isWideScreen={isWideScreen}/>
+          <GameGrid/>
           </div>
           <div className='flex justify-between items-center mx-[5%] space-x-[3%] my-[15%]'>
-            <DPad isWideScreen={isWideScreen}/>
-            <ActionButtons isWideScreen={isWideScreen}/>
+            <DPad/>
+            <ActionButtons/>
           </div>
-          
-          
         </div>
       )}
-      <SizeIndicator/>
     </main>    
+  );
+}
+
+export default function HomeWrapped() {
+  return (
+    <GameStateProvider>
+      <Home />
+    </GameStateProvider>
   );
 }
