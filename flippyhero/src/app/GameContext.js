@@ -5,6 +5,8 @@ const GameState = createContext();
 export function GameStateProvider({ children }) {
   const [isWideScreen, setIsWideScreen] = useState(true);
   const [isZoomed, setIsZoomed] = useState(true);
+  const [currentColor, setCurrentColor] = useState("#FFFFFF");
+
   var gameGridData = Array.from({ length: 100 }, (_, row) =>
       Array.from({ length: 100 }, (_, col) => ({
         color: "#FFFFFF",

@@ -32,7 +32,7 @@ function GameGrid() {
 
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
-    const tileSize = Math.ceil(canvas.width / gridSize);
+    const tileSize = Math.round(canvas.width / gridSize);
 
     for (let row = 0; row < gridSize; row++) {
       for (let col = 0; col < gridSize; col++) {
@@ -46,7 +46,7 @@ function GameGrid() {
   return (
     <canvas
       ref={canvasRef}
-      className={`relative aspect-square ${isWideScreen ? 'h-[78vh]' : 'h-[49vh]'} shadow-lg shadow-amber-200`}
+      className={`relative aspect-square ${isWideScreen ? 'h-[78vh]' : 'h-[49vh]'}`}
     />
   );
 }
@@ -55,14 +55,14 @@ function DPad() {
   const { isWideScreen, isZoomed} = useGameState();
   const btnSize = isWideScreen ? 'h-[8vh] w-[8vh]' : 'h-[7vh] w-[7vh]';
   return (
-    <div className={`relative w-[32vh] left-0 flex flex-col items-center sm:text-xl text-lg font-black`}>
-      <button className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}>W</button>
+    <div className={`relative w-[32vh] left-0 flex flex-col items-center sm:text-xl text-2xl font-black`}>
+      <button className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}>🠉</button>
       <div className="flex">
-        <button className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}>A</button>
+        <button className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}>🠈</button>
         <div className={`relative z-10 ${btnSize} bg-gray-500`}></div>
-        <button className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}>D</button>
+        <button className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}>🠊</button>
       </div>
-      <button className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}>S</button>
+      <button className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}>🠋</button>
     </div>
   );
 }
