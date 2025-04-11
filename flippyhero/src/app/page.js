@@ -20,7 +20,10 @@ function PlayerCharacter() {
         tap</div>
         <div 
           className={`absolute top-[50%] left-[50%] z-40 bg-violet-500 aspect-square ${isWideScreen ? 'h-[22vh]' : 'h-[14vh]'} transform -translate-x-1/2 -translate-y-1/2 opacity-50`}>
-        hold</div>
+        hold1</div>
+        <div 
+          className={`absolute top-[50%] left-[50%] z-40 bg-violet-500 aspect-square ${isWideScreen ? 'h-[33vh]' : 'h-[21vh]'} transform -translate-x-1/2 -translate-y-1/2 opacity-25`}>
+        hold2</div>
       </div>
     )
   );
@@ -86,17 +89,23 @@ function DPad() {
 
   const startMove = (degrees, dx = 0, dy = 0) => {
     setPlayerDirection(degrees);
-
-    const timer = setTimeout(() => {
-      pressTimeRef.current = setInterval(() => { 
+    const maxSpeed = 2;
+    const acceleration = 0.25;
+    let currentSpeed = 0;
+    
+    pressTimeRef.current = setInterval(() => {
+      currentSpeed = Math.min(maxSpeed, currentSpeed + acceleration);
+      const adjustedDx = (dx / 2) * currentSpeed;
+      const adjustedDy = (dy / 2) * currentSpeed;
+      if (currentSpeed > 0.2) {
         setPlayerPosition(prev => ({
-          x: Math.max(0, Math.min(100, prev.x + dx)),
-          y: Math.max(0, Math.min(100, prev.y + dy))
+          x: Math.max(0, Math.min(100, prev.x + adjustedDx)),
+          y: Math.max(0, Math.min(100, prev.y + adjustedDy))
         }));
-      }, 33.33);
-    }, 16.67);
+      }
+      
+    }, 33.33);
 
-    pressTimeRef.current = timer;
   };
 
   const stopMove = () => {
