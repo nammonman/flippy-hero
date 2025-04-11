@@ -2,6 +2,50 @@
 import { useState, useEffect, useRef } from 'react';
 import { GameStateProvider, useGameState } from './GameContext';
 
+function getOverlappingTile(attackElement) {
+  const rect = attackElement.getBoundingClientRect();
+  const centerPoint = [rect.left + rect.width/2, rect.top + rect.height/2] 
+
+  const overlappingElements = document.elementsFromPoint(centerPoint[0], centerPoint[1]);
+  const flippable = overlappingElements.find(el => el.getAttribute('tag') === 'flippable');
+  return flippable ? flippable : null;
+}
+
+function isOverEdge(attackElement) {
+  const rect = attackElement.getBoundingClientRect();
+  const pointAtPlayerEdge = [rect.left + rect.width/2, rect.top + rect.height/2] 
+
+  const overlappingElements = document.elementsFromPoint(centerPoint);
+  const edge = overlappingElements.find(el => el.getAttribute('tag') === 'edge');
+  return flippable ? flippable : null;
+}
+
+function getOverlappingTiles(attackElement) {
+  const attackRect = attackElement.getBoundingClientRect();
+  const tileElements = document.querySelectorAll('[tag="flippable"]');
+  const overlappingTiles = [];
+
+  tileElements.forEach(tileElement => {
+    const tileRect = tileElement.getBoundingClientRect();
+    
+    if (!(attackRect.right < tileRect.left || 
+          attackRect.left > tileRect.right || 
+          attackRect.bottom < tileRect.top || 
+          attackRect.top > tileRect.bottom)) {
+      overlappingTiles.push(tileElement);
+    }
+  });
+
+  return overlappingTiles.length > 0 ? overlappingTiles : null;
+}
+
+function changeTileColor(tileElement) {
+  tileElement.style.backgroundColor = "blue";
+  tileElement.classList.add('rotate-x-180');
+  tileElement.style.transition = 'transform 0.5s';
+  tileElement.style.transform = 'rotateX(180deg)';
+}
+
 function PlayerCharacter() {
   const { isWideScreen, isZoomed, playerDirection, playerPosition } = useGameState();
   
@@ -16,14 +60,20 @@ function PlayerCharacter() {
         }}
       >player
         <div 
-          className={`absolute top-[50%] left-[125%] z-40 bg-violet-500 aspect-square ${isWideScreen ? 'h-[5.5vh]' : 'h-[3.5vh]'} transform -translate-x-1/2 -translate-y-1/2`}>
-        tap</div>
+          className={`absolute top-[50%] left-[125%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[5.5vh]' : 'h-[3.5vh]'} transform -translate-x-1/2 -translate-y-1/2`}
+          tag="atk1"
+        >tap</div>
+        
         <div 
-          className={`absolute top-[50%] left-[50%] z-40 bg-violet-500 aspect-square ${isWideScreen ? 'h-[22vh]' : 'h-[14vh]'} transform -translate-x-1/2 -translate-y-1/2 opacity-50`}>
-        hold1</div>
+          className={`absolute top-[50%] left-[100%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[13.7vh]' : 'h-[9vh]'} transform -translate-x-1/2 -translate-y-1/2 opacity-50`}
+          tag="atk2"
+        >hold1</div>
+        
         <div 
-          className={`absolute top-[50%] left-[50%] z-40 bg-violet-500 aspect-square ${isWideScreen ? 'h-[33vh]' : 'h-[21vh]'} transform -translate-x-1/2 -translate-y-1/2 opacity-25`}>
-        hold2</div>
+          className={`absolute top-[50%] left-[50%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[27.5vh]' : 'h-[17.5vh]'} transform -translate-x-1/2 -translate-y-1/2 opacity-40`}
+          tag="atk3"
+        >hold2</div>
+        
       </div>
     )
   );
@@ -157,20 +207,66 @@ function DPad() {
 function ActionButtons() {
   const { isWideScreen, isZoomed, setIsZoomed } = useGameState();
   const btnSize = isWideScreen ? 'h-[14vh] w-[14vh]' : 'h-[10vh] w-[10vh]';
+  const attackPressRef = useRef(null);
+  
+  const attack = () => {
+    const duration = Date.now() - attackPressRef.current;
+    let attackTag;
+    if (duration < 500) {
+      attackTag = 'atk1';
+    } 
+    else if (duration < 1000) {
+      attackTag = 'atk2';
+    } 
+    else {
+      attackTag = 'atk3';
+    }
+    
+    const attackElement = document.querySelector(`[tag="${attackTag}"]`);
+    if (attackElement) {
+      if (attackTag === 'atk1') {
+        const tile = getOverlappingTile(attackElement);
+        if (tile) {
+          changeTileColor(tile)
+        };
+      } 
+      else {
+        const tiles = getOverlappingTiles(attackElement);
+        if (tiles) {
+          tiles.forEach(tile => changeTileColor(tile))
+        };
+      }
+    }
+  };
+
+  const startAttack = () => {
+    attackPressRef.current = Date.now();
+  };
+
+  const stopAttack = () => {
+    attackPressRef.current = null;
+  };
+
   return (
     <div className="flex flex-row gap-[5%] w-[32vh]"> 
       <div className="relative w-full right-0 flex flex-col items-center space-y-[20%] text-lg font-black">
-      <button 
-                className={` ${btnSize} bg-green-500 rounded-full shadow-amber-900 shadow-lg active:shadow-sm`}
-                onClick={() => setIsZoomed(!isZoomed)}
+        <button 
+          className={` ${btnSize} bg-green-500 rounded-full shadow-amber-900 shadow-lg active:shadow-sm`}
+          onClick={() => setIsZoomed(!isZoomed)}
         >Z</button>
         <button 
-                className={` ${btnSize} bg-blue-500 rounded-full shadow-amber-900 shadow-lg active:shadow-sm`}
-                
+          className={` ${btnSize} bg-blue-500 rounded-full shadow-amber-900 shadow-lg active:shadow-sm`}
         >C</button>
       </div>
       <div className="relative w-full right-0 flex items-center space-y-[9%] space-x-[9%] text-lg font-black">
-        <button className={` ${btnSize} bg-red-500 rounded-full shadow-amber-900 shadow-lg active:shadow-sm`}>A</button>
+        <button 
+          className={` ${btnSize} bg-red-500 rounded-full shadow-amber-900 shadow-lg active:shadow-sm`}
+          onMouseDown={startAttack}
+          onMouseUp={attack}
+          //onMouseLeave={stopAttack}
+          onTouchStart={startAttack}
+          onTouchEnd={attack}
+        >A</button>
       </div>
     </div>
   );
@@ -204,7 +300,7 @@ function Home() {
   return (
     <main className="flex bg-gray-900 w-screen h-screen text-black overflow-hidden justify-center items-center ">
       {isWideScreen ? (
-        <div className='bg-amber-300 rounded-4xl w-[160vh] h-[90vh] flex items-center shadow-inner shadow-amber-700'>
+        <div className='bg-amber-300 rounded-4xl w-[160vh] h-[90vh] flex items-center shadow-inner shadow-amber-700' tag="edge">
           <div className='flex justify-between items-center p-[3%] space-x-[3%] w-full h-full'>
             <DPad/>
             <div className="relative"> {/* Add this wrapper div */}
@@ -215,7 +311,7 @@ function Home() {
           </div>
         </div>
       ) : (
-        <div className='bg-amber-300 rounded-4xl h-[96vh] w-[54vh] justify-center items-center shadow-inner shadow-amber-700'>
+        <div className='bg-amber-300 rounded-4xl h-[96vh] w-[54vh] justify-center items-center shadow-inner shadow-amber-700' tag="edge">
           <div className='flex justify-between items-center m-[5%] '>
             <div className="relative"> {/* Add this wrapper div */}
               <GameGrid/>
