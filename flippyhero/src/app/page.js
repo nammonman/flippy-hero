@@ -13,11 +13,17 @@ function getOverlappingTile(attackElement) {
 
 function isOverEdge(attackElement) {
   const rect = attackElement.getBoundingClientRect();
-  const pointAtPlayerEdge = [rect.left + rect.width/2, rect.top + rect.height/2] 
+  const centerPoint = [rect.left + rect.width/2, rect.top + rect.height/2] 
 
-  const overlappingElements = document.elementsFromPoint(centerPoint);
+  const overlappingElements = document.elementsFromPoint(centerPoint[0], centerPoint[1]);
+
+  const flippable = overlappingElements.find(el => el.getAttribute('tag') === 'flippable');
+  if (flippable) {
+    return false
+  }
+  
   const edge = overlappingElements.find(el => el.getAttribute('tag') === 'edge');
-  return flippable ? flippable : null;
+  return edge ? true : false;
 }
 
 function getOverlappingTiles(attackElement) {
@@ -48,7 +54,7 @@ function changeTileColor(tileElement) {
 
 function PlayerCharacter() {
   const { isWideScreen, isZoomed, playerDirection, playerPosition } = useGameState();
-  
+
   return (
     isZoomed && (
       <div 
@@ -58,21 +64,21 @@ function PlayerCharacter() {
           left: `${playerPosition.x}%`,
           transform: `translate(-50%, -50%) rotate(${playerDirection}deg)`
         }}
-      >player
+      >
         <div 
-          className={`absolute top-[50%] left-[125%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[5.5vh]' : 'h-[3.5vh]'} transform -translate-x-1/2 -translate-y-1/2`}
+          className={`absolute top-[50%] left-[130%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[5.5vh]' : 'h-[3.5vh]'} transform -translate-x-1/2 -translate-y-1/2`}
           tag="atk1"
-        >tap</div>
+        ></div>
         
         <div 
-          className={`absolute top-[50%] left-[100%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[13.7vh]' : 'h-[9vh]'} transform -translate-x-1/2 -translate-y-1/2 opacity-50`}
+          className={`absolute top-[50%] left-[145%] z-40 bg-violet-900 ${isWideScreen ? 'h-[17.5vh] w-[8.8vh]' : 'h-[11.3vh] w-[5.8vh]'} transform -translate-x-1/2 -translate-y-1/2 opacity-50`}
           tag="atk2"
-        >hold1</div>
+        ></div>
         
         <div 
-          className={`absolute top-[50%] left-[50%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[27.5vh]' : 'h-[17.5vh]'} transform -translate-x-1/2 -translate-y-1/2 opacity-40`}
+          className={`absolute top-[50%] left-[50%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[30.5vh]' : 'h-[19.5vh]'} transform -translate-x-1/2 -translate-y-1/2 opacity-40`}
           tag="atk3"
-        >hold2</div>
+        ></div>
         
       </div>
     )
@@ -104,8 +110,8 @@ function GameGrid() {
 
   useEffect(() => {
     const canvas = canvasRef.current;
-    canvas.width = canvas.offsetWidth;
-    canvas.height = canvas.offsetHeight;
+    canvas.width = canvas.offsetWidth *4; // quadruple resolution for saving png
+    canvas.height = canvas.offsetHeight *4;
     
     const ctx = canvas.getContext('2d');
     ctx.imageSmoothingEnabled = false;
@@ -132,15 +138,15 @@ function GameGrid() {
 }
 
 function DPad() {
-  const { isWideScreen, playerDirection, setPlayerDirection, playerPosition, setPlayerPosition } = useGameState();
+  const { isWideScreen, isZoomed, playerDirection, setPlayerDirection, playerPosition, setPlayerPosition } = useGameState();
   const btnSize = isWideScreen ? 'h-[8vh] w-[8vh]' : 'h-[7vh] w-[7vh]';
 
   const pressTimeRef = useRef(null);
 
   const startMove = (degrees, dx = 0, dy = 0) => {
     setPlayerDirection(degrees);
-    const maxSpeed = 2;
-    const acceleration = 0.25;
+    const maxSpeed = 0.5;
+    const acceleration = 0.015;
     let currentSpeed = 0;
     
     pressTimeRef.current = setInterval(() => {
@@ -154,7 +160,7 @@ function DPad() {
         }));
       }
       
-    }, 33.33);
+    }, 1);
 
   };
 
@@ -162,6 +168,30 @@ function DPad() {
     clearInterval(pressTimeRef.current);
     pressTimeRef.current = null;
   };
+
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const attackElement = document.querySelector(`[tag="atk1"]`);
+      if (attackElement && isOverEdge(attackElement)) {
+        // teleport the player to the opposite side based on the direction
+        if (playerDirection === 0) {
+          // r-l
+          setPlayerPosition((prev) => ({ ...prev, x: 7 }));
+        } else if (playerDirection === 180) {
+          // l-r
+          setPlayerPosition((prev) => ({ ...prev, x: 93 }));
+        } else if (playerDirection === 90) {
+          // b-t
+          setPlayerPosition((prev) => ({ ...prev, y: 7 }));
+        } else if (playerDirection === 270) {
+          // t-b
+          setPlayerPosition((prev) => ({ ...prev, y: 93 }));
+        }
+      }
+    }, 100);
+    return () => clearInterval(interval);
+  }, [playerDirection, setPlayerPosition]);
 
   return (
     <div className={`relative w-[32vh] left-0 flex flex-col items-center sm:text-xl text-2xl font-black`}>
@@ -172,6 +202,7 @@ function DPad() {
         onMouseLeave={stopMove}
         onTouchStart={() => startMove(90, 0, -2)}
         onTouchEnd={stopMove}
+        style={{ fontSize: 'calc(4vh)' }}
       >🠉</button>
       <div className="flex">
         <button 
@@ -181,6 +212,7 @@ function DPad() {
           onMouseLeave={stopMove}
           onTouchStart={() => startMove(180, -2, 0)}
           onTouchEnd={stopMove}
+          style={{ fontSize: 'calc(4vh)' }}
         >🠈</button>
         <div className={`relative z-10 ${btnSize} bg-gray-500`}></div>
         <button 
@@ -190,6 +222,7 @@ function DPad() {
           onMouseLeave={stopMove}
           onTouchStart={() => startMove(0, 2, 0)}
           onTouchEnd={stopMove}
+          style={{ fontSize: 'calc(4vh)' }}
         >🠊</button>
       </div>
       <button 
@@ -199,6 +232,7 @@ function DPad() {
         onMouseLeave={stopMove}
         onTouchStart={() => startMove(90, 0, 2)}
         onTouchEnd={stopMove}
+        style={{ fontSize: 'calc(4vh)' }}
       >🠋</button>
     </div>
   );
@@ -253,9 +287,11 @@ function ActionButtons() {
         <button 
           className={` ${btnSize} bg-green-500 rounded-full shadow-amber-900 shadow-lg active:shadow-sm`}
           onClick={() => setIsZoomed(!isZoomed)}
+          style={{ fontSize: 'calc(4vh)' }}
         >Z</button>
         <button 
           className={` ${btnSize} bg-blue-500 rounded-full shadow-amber-900 shadow-lg active:shadow-sm`}
+          style={{ fontSize: 'calc(4vh)' }}
         >C</button>
       </div>
       <div className="relative w-full right-0 flex items-center space-y-[9%] space-x-[9%] text-lg font-black">
@@ -266,10 +302,55 @@ function ActionButtons() {
           //onMouseLeave={stopAttack}
           onTouchStart={startAttack}
           onTouchEnd={attack}
+          style={{ fontSize: 'calc(4vh)' }}
         >A</button>
       </div>
     </div>
   );
+}
+
+function OptionButtons() {
+  const { isWideScreen, isZoomed } = useGameState();
+  if (isWideScreen) {
+    return (
+      <div className={`absolute bottom-[12vh] w-[160vh] flex items-center justify-center text-lg font-bold space-x-[1%]`}>
+        <div className='relative flex flex-col justify-center items-center text-center'>
+            <div style={{ fontSize: 'calc(3vh)' }}>Show Position</div>
+            <button className='bg-gray-400 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
+        </div>
+        <div className={`relative w-[89vh] h-[3vh] `}></div>
+        <div className='relative flex flex-col justify-center items-center text-center'>
+            <div style={{ fontSize: 'calc(3vh)' }}>Undo</div>
+            <button className='bg-gray-300 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
+        </div>
+        <div className={`relative w-[4vh] h-[3vh] `}></div>
+        <div className='relative flex flex-col justify-center items-center text-center'>
+            <div style={{ fontSize: 'calc(3vh)' }}>Redo</div>
+            <button className='bg-gray-300 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
+        </div>
+      </div>
+      
+    );
+  }
+  else {
+    return (
+      <div className='relative flex flex-row justify-center items-center w-full space-x-[10%] font-bold'>
+        <div className='relative flex flex-col justify-center items-center text-center'>
+            <div style={{ fontSize: 'calc(2vh)' }}>Show Position</div>
+            <button className='bg-gray-400 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
+        </div>
+        <div className='relative flex flex-col justify-center items-center text-center'>
+            <div style={{ fontSize: 'calc(2vh)' }}>Undo</div>
+            <button className='bg-gray-300 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
+        </div>
+        <div className='relative flex flex-col justify-center items-center text-center'>
+            <div style={{ fontSize: 'calc(2vh)' }}>Redo</div>
+            <button className='bg-gray-300 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
+        </div>
+      </div>
+    );
+  }
+  
 }
 
 function SizeIndicator() {
@@ -297,31 +378,37 @@ function Home() {
     return () => window.removeEventListener('resize', checkAspectRatio);
   }, [setIsWideScreen]);
 
+  
+
   return (
-    <main className="flex bg-gray-900 w-screen h-screen text-black overflow-hidden justify-center items-center ">
+    <main className="flex bg-gray-900 w-screen h-screen text-black overflow-hidden justify-center items-center" tag="edge">
       {isWideScreen ? (
-        <div className='bg-amber-300 rounded-4xl w-[160vh] h-[90vh] flex items-center shadow-inner shadow-amber-700' tag="edge">
+        <div className='bg-amber-300 rounded-4xl w-[160vh] h-[90vh] flex items-center shadow-inner shadow-amber-50' tag="edge">
           <div className='flex justify-between items-center p-[3%] space-x-[3%] w-full h-full'>
             <DPad/>
-            <div className="relative"> {/* Add this wrapper div */}
+            <div className="relative">
               <GameGrid/>
               <FlipGrid/>
             </div>
             <ActionButtons/>
+            
           </div>
+          <OptionButtons/>
         </div>
       ) : (
         <div className='bg-amber-300 rounded-4xl h-[96vh] w-[54vh] justify-center items-center shadow-inner shadow-amber-700' tag="edge">
           <div className='flex justify-between items-center m-[5%] '>
-            <div className="relative"> {/* Add this wrapper div */}
+            <div className="relative">
               <GameGrid/>
               <FlipGrid/>
             </div>
           </div>
-          <div className='flex justify-between items-center mx-[5%] space-x-[3%] my-[15%]'>
+          <div className='flex justify-between items-center mx-[5%] space-x-[3%] mt-[10%] mb-[10%]'>
             <DPad/>
             <ActionButtons/>
+            
           </div>
+          <OptionButtons/>
         </div>
       )}
     </main>    
