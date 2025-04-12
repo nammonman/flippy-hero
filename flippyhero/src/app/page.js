@@ -62,18 +62,16 @@ function changeTileColor(tileElement) {
 
 function DebugText() {
   return (
-    <div className={`absolute top-0 left-0 text-amber-50 text-shadow-xs font-mono`}>
-      🠉🠉🠋🠋🠈🠊🠈🠊BA
+    <div className={`absolute z-100 top-0 left-0 text-amber-50 text-shadow-lg font-mono bg-amber-950 opacity-90 w-60 wrap-break-word pointer-events-none`}>
+      {/*🠉🠉🠋🠋🠈🠊🠈🠊BA
+      <br/>*/}
+      hello im debug<br/>
       <br/>
-      hello im debug
+      gridPosition:<br/>{"placeholder"}<br/>
       <br/>
+      undoHistory:<br/>{"placeholder"}<br/>
       <br/>
-      gridPosition:
-      <br/>
-      undoHistory:
-      <br/>
-      redoHistory:
-      <br/>
+      redoHistory:<br/>{"placeholder"}<br/>
     </div>
   );
 }
@@ -92,17 +90,17 @@ function PlayerCharacter() {
         }}
       >
         <div 
-          className={`absolute top-[50%] left-[130%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[5.5vh]' : 'h-[3.5vh]'} transform -translate-x-1/2 -translate-y-1/2`}
+          className={`absolute top-[50%] left-[130%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[5.5vh]' : 'h-[3.5vh]'} transform -translate-x-1/2 -translate-y-1/2 pointer-events-none`}
           tag="atk1"
         ></div>
         
         <div 
-          className={`absolute top-[50%] left-[145%] z-40 bg-violet-900 ${isWideScreen ? 'h-[17.5vh] w-[8.8vh]' : 'h-[11.3vh] w-[5.8vh]'} transform -translate-x-1/2 -translate-y-1/2 opacity-50`}
+          className={`absolute top-[50%] left-[145%] z-40 bg-violet-900 ${isWideScreen ? 'h-[17.5vh] w-[8.8vh]' : 'h-[11.3vh] w-[5.8vh]'} transform -translate-x-1/2 -translate-y-1/2  pointer-events-none opacity-50`}
           tag="atk2"
         ></div>
         
         <div 
-          className={`absolute top-[50%] left-[50%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[30.5vh]' : 'h-[19.5vh]'} transform -translate-x-1/2 -translate-y-1/2 opacity-40`}
+          className={`absolute top-[50%] left-[50%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[30.5vh]' : 'h-[19.5vh]'} transform -translate-x-1/2 -translate-y-1/2  pointer-events-none opacity-40`}
           tag="atk3"
         ></div>
         
