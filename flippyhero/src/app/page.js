@@ -1,6 +1,10 @@
 'use client';
 import { useState, useEffect, useRef } from 'react';
 import { GameStateProvider, useGameState } from './GameContext';
+import { Inter } from 'next/font/google'
+import { Sixtyfour } from 'next/font/google'
+
+const sixtyfour = Sixtyfour({ subsets: ['latin'], weight: '400' })
 
 function getOverlappingTile(attackElement) {
   const rect = attackElement.getBoundingClientRect();
@@ -19,6 +23,10 @@ function isOverEdge(attackElement) {
 
   const flippable = overlappingElements.find(el => el.getAttribute('tag') === 'flippable');
   if (flippable) {
+    return false
+  }
+  const canvas = overlappingElements.find(el => el.getAttribute('tag') === 'canvas');
+  if (canvas) {
     return false
   }
   
@@ -50,6 +58,24 @@ function changeTileColor(tileElement) {
   tileElement.classList.add('rotate-x-180');
   tileElement.style.transition = 'transform 0.5s';
   tileElement.style.transform = 'rotateX(180deg)';
+}
+
+function DebugText() {
+  return (
+    <div className={`absolute top-0 left-0 text-amber-50 text-shadow-xs font-mono`}>
+      🠉🠉🠋🠋🠈🠊🠈🠊BA
+      <br/>
+      hello im debug
+      <br/>
+      <br/>
+      gridPosition:
+      <br/>
+      undoHistory:
+      <br/>
+      redoHistory:
+      <br/>
+    </div>
+  );
 }
 
 function PlayerCharacter() {
@@ -133,6 +159,7 @@ function GameGrid() {
     <canvas
       ref={canvasRef}
       className={`relative aspect-square ${isWideScreen ? 'h-[77vh]' : 'h-[49vh]'}`}
+      tag="canvas"
     />
   );
 }
@@ -243,19 +270,7 @@ function ActionButtons() {
   const btnSize = isWideScreen ? 'h-[14vh] w-[14vh]' : 'h-[10vh] w-[10vh]';
   const attackPressRef = useRef(null);
   
-  const attack = () => {
-    const duration = Date.now() - attackPressRef.current;
-    let attackTag;
-    if (duration < 500) {
-      attackTag = 'atk1';
-    } 
-    else if (duration < 1000) {
-      attackTag = 'atk2';
-    } 
-    else {
-      attackTag = 'atk3';
-    }
-    
+  const attack = (attackTag) => {
     const attackElement = document.querySelector(`[tag="${attackTag}"]`);
     if (attackElement) {
       if (attackTag === 'atk1') {
@@ -273,11 +288,41 @@ function ActionButtons() {
     }
   };
 
-  const startAttack = () => {
-    attackPressRef.current = Date.now();
+  const chargeAttack = () => {
+    const atkbtn = document.querySelector(`[tag="atkbtn"]`);
+    const startTime = Date.now();
+    attackPressRef.current = {
+      startTime,
+      intervalId: setInterval(() => {
+        const duration = Date.now() - startTime;
+        if (duration < 500) {
+          atkbtn.style.backgroundColor = "#fb2c36"; 
+        } else if (duration < 1000) {
+          atkbtn.style.backgroundColor = "salmon";
+        } else {
+          atkbtn.style.backgroundColor = "pink";
+        }
+      }, 50)
+    };
   };
 
   const stopAttack = () => {
+    if (!attackPressRef.current) return;
+    
+    clearInterval(attackPressRef.current.intervalId);
+
+    const duration = Date.now() - attackPressRef.current.startTime;
+    
+    if (duration < 500) {
+      attack("atk1");
+    } else if (duration < 1000) {
+      attack("atk2");
+    } else {
+      attack("atk3");
+    }
+
+    const atkbtn = document.querySelector(`[tag="atkbtn"]`);
+    atkbtn.style.backgroundColor = "#fb2c36";
     attackPressRef.current = null;
   };
 
@@ -297,12 +342,13 @@ function ActionButtons() {
       <div className="relative w-full right-0 flex items-center space-y-[9%] space-x-[9%] text-lg font-black">
         <button 
           className={` ${btnSize} bg-red-500 rounded-full shadow-amber-900 shadow-lg active:shadow-sm`}
-          onMouseDown={startAttack}
-          onMouseUp={attack}
-          //onMouseLeave={stopAttack}
-          onTouchStart={startAttack}
-          onTouchEnd={attack}
+          onMouseDown={chargeAttack}
+          onMouseUp={stopAttack}
+          onMouseLeave={stopAttack}
+          onTouchStart={chargeAttack}
+          onTouchEnd={stopAttack}
           style={{ fontSize: 'calc(4vh)' }}
+          tag="atkbtn"
         >A</button>
       </div>
     </div>
@@ -315,17 +361,17 @@ function OptionButtons() {
     return (
       <div className={`absolute bottom-[12vh] w-[160vh] flex items-center justify-center text-lg font-bold space-x-[1%]`}>
         <div className='relative flex flex-col justify-center items-center text-center'>
-            <div style={{ fontSize: 'calc(3vh)' }}>Show Position</div>
+            <div style={{ fontSize: 'calc(2vh)' }}>Show Position</div>
             <button className='bg-gray-400 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
         </div>
-        <div className={`relative w-[89vh] h-[3vh] `}></div>
+        <div className={`relative w-[90vh] h-[3vh] `}></div>
         <div className='relative flex flex-col justify-center items-center text-center'>
-            <div style={{ fontSize: 'calc(3vh)' }}>Undo</div>
+            <div style={{ fontSize: 'calc(2vh)' }}>Undo</div>
             <button className='bg-gray-300 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
         </div>
         <div className={`relative w-[4vh] h-[3vh] `}></div>
         <div className='relative flex flex-col justify-center items-center text-center'>
-            <div style={{ fontSize: 'calc(3vh)' }}>Redo</div>
+            <div style={{ fontSize: 'calc(2vh)' }}>Redo</div>
             <button className='bg-gray-300 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
         </div>
       </div>
@@ -336,15 +382,15 @@ function OptionButtons() {
     return (
       <div className='relative flex flex-row justify-center items-center w-full space-x-[10%] font-bold'>
         <div className='relative flex flex-col justify-center items-center text-center'>
-            <div style={{ fontSize: 'calc(2vh)' }}>Show Position</div>
+            <div style={{ fontSize: 'calc(1.5vh)' }}>Show Position</div>
             <button className='bg-gray-400 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
         </div>
         <div className='relative flex flex-col justify-center items-center text-center'>
-            <div style={{ fontSize: 'calc(2vh)' }}>Undo</div>
+            <div style={{ fontSize: 'calc(1.5vh)' }}>Undo</div>
             <button className='bg-gray-300 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
         </div>
         <div className='relative flex flex-col justify-center items-center text-center'>
-            <div style={{ fontSize: 'calc(2vh)' }}>Redo</div>
+            <div style={{ fontSize: 'calc(1.5vh)' }}>Redo</div>
             <button className='bg-gray-300 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
         </div>
       </div>
@@ -381,7 +427,7 @@ function Home() {
   
 
   return (
-    <main className="flex bg-gray-900 w-screen h-screen text-black overflow-hidden justify-center items-center" tag="edge">
+    <main className={`flex bg-gray-900 w-screen h-screen text-black overflow-hidden justify-center items-center  ${sixtyfour.className}`} tag="edge">
       {isWideScreen ? (
         <div className='bg-amber-300 rounded-4xl w-[160vh] h-[90vh] flex items-center shadow-inner shadow-amber-50' tag="edge">
           <div className='flex justify-between items-center p-[3%] space-x-[3%] w-full h-full'>
@@ -406,11 +452,11 @@ function Home() {
           <div className='flex justify-between items-center mx-[5%] space-x-[3%] mt-[10%] mb-[10%]'>
             <DPad/>
             <ActionButtons/>
-            
           </div>
           <OptionButtons/>
         </div>
       )}
+      <DebugText/>
     </main>    
   );
 }
