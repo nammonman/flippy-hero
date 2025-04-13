@@ -64,7 +64,6 @@ function changeTileColor(tileElement, color) {
   }
   tileElement.dataset.rotation = rotation;
   tileElement.style.backgroundColor = color;
-  tileElement.style.opacity = 1;
   tileElement.style.transition = 'transform 0.5s';
   tileElement.style.transform = `rotateX(${rotation}deg)`;
 }
@@ -161,7 +160,7 @@ function FlipGrid() {
           return (
             <div 
               key={i}
-              className={`h-[101%] w-[101%] bg-white opacity-0`}
+              className={`h-[101%] w-[101%] bg-white opacity-88`}
               tag='flippable'
               coordinatex={col}
               coordinatey={row}
