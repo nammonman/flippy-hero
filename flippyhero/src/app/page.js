@@ -53,24 +53,65 @@ function getOverlappingTiles(attackElement) {
   return overlappingTiles.length > 0 ? overlappingTiles : null;
 }
 
-function changeTileColor(tileElement) {
-  tileElement.style.backgroundColor = "blue";
-  tileElement.classList.add('rotate-x-180');
+function changeTileColor(tileElement, color) {
+  let rotation = parseInt(tileElement.dataset.rotation || 0);
+
+  if (rotation < 180) {
+    rotation += 180;
+  }
+  else {
+    rotation -= 180;
+  }
+  tileElement.dataset.rotation = rotation;
+  tileElement.style.backgroundColor = color;
+  tileElement.style.opacity = 1;
   tileElement.style.transition = 'transform 0.5s';
-  tileElement.style.transform = 'rotateX(180deg)';
+  tileElement.style.transform = `rotateX(${rotation}deg)`;
 }
 
 function DebugText() {
+  const { isWideScreen,
+    setIsWideScreen,
+    isZoomed,
+    setIsZoomed,
+    gameGridData,
+    currentColor,
+    setCurrentColor,
+    playerDirection,
+    setPlayerDirection,
+    playerPosition,
+    setPlayerPosition,
+    cameraPosition,
+    setCameraPosition} = useGameState();
+  const [fps, setFps] = useState(0);
+
+  useEffect(() => {
+    let frameCount = 0;
+    let lastTime = performance.now();
+    let animationFrameId;
+
+    const loop = () => {
+      const now = performance.now();
+      frameCount++;
+      if (now - lastTime >= 1000) {
+        setFps(frameCount);
+        frameCount = 0;
+        lastTime = now;
+      }
+      animationFrameId = requestAnimationFrame(loop);
+    };
+
+    animationFrameId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, []);
+
   return (
     <div className={`absolute z-100 top-0 left-0 text-amber-50 text-shadow-lg font-mono bg-amber-950 opacity-90 w-60 wrap-break-word pointer-events-none`}>
-      {/*🠉🠉🠋🠋🠈🠊🠈🠊BA
-      <br/>*/}
-      hello im debug<br/>
-      <br/>
-      gridPosition:<br/>{"placeholder"}<br/>
-      <br/>
-      undoHistory:<br/>{"placeholder"}<br/>
-      <br/>
+      hello im debug<br/><br/>
+      FPS: {fps}<br/><br/>
+      currentColor:<br/>{currentColor}<br/><br/>
+      cameraPosition:<br/>{JSON.stringify(cameraPosition)}<br/><br/>
+      undoHistory:<br/>{"placeholder"}<br/><br/>
       redoHistory:<br/>{"placeholder"}<br/>
     </div>
   );
@@ -82,7 +123,7 @@ function PlayerCharacter() {
   return (
     isZoomed && (
       <div 
-        className={`absolute z-30 bg-violet-700 aspect-square ${isWideScreen ? 'h-[11vh]' : 'h-[7vh]'} shadow-lg`}
+        className={`absolute z-30 bg-violet-700 aspect-square ${isWideScreen ? 'h-[11vh]' : 'h-[7vh]'} `}
         style={{
           top: `${playerPosition.y}%`,
           left: `${playerPosition.x}%`,
@@ -90,17 +131,17 @@ function PlayerCharacter() {
         }}
       >
         <div 
-          className={`absolute top-[50%] left-[130%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[5.5vh]' : 'h-[3.5vh]'} transform -translate-x-1/2 -translate-y-1/2 pointer-events-none`}
+          className={`absolute top-[50%] left-[130%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[1vh]' : 'h-[1vh]'} transform -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-0`}
           tag="atk1"
         ></div>
         
         <div 
-          className={`absolute top-[50%] left-[145%] z-40 bg-violet-900 ${isWideScreen ? 'h-[17.5vh] w-[8.8vh]' : 'h-[11.3vh] w-[5.8vh]'} transform -translate-x-1/2 -translate-y-1/2  pointer-events-none opacity-50`}
+          className={`absolute top-[50%] left-[145%] z-40 bg-violet-900 ${isWideScreen ? 'h-[17.5vh] w-[8.8vh]' : 'h-[11.3vh] w-[5.8vh]'} transform -translate-x-1/2 -translate-y-1/2  pointer-events-none opacity-0`}
           tag="atk2"
         ></div>
         
         <div 
-          className={`absolute top-[50%] left-[50%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[30.5vh]' : 'h-[19.5vh]'} transform -translate-x-1/2 -translate-y-1/2  pointer-events-none opacity-40`}
+          className={`absolute top-[50%] left-[50%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[30.5vh]' : 'h-[19.5vh]'} transform -translate-x-1/2 -translate-y-1/2  pointer-events-none opacity-0`}
           tag="atk3"
         ></div>
         
@@ -111,21 +152,44 @@ function PlayerCharacter() {
 
 function FlipGrid() {
   const { isWideScreen, isZoomed } = useGameState();
-  return (
-    isZoomed && (<div className={`absolute top-0 left-0 z-20 grid grid-cols-10 gap-0 aspect-square ${isWideScreen ? 'h-[77vh]' : 'h-[49vh]'}`}>
-      {Array(100).fill().map((_, i) => {
-        return (
-          <div 
-            key={i}
-            className={`h-full aspect-square bg-white opacity-50`}
-            tag='flippable'
-            id=''
-          ></div>
-        );
-      })}
-      <PlayerCharacter/>
-    </div>)
-  );
+  if (isZoomed) {
+    return (
+      <div className={`absolute top-0 left-0 z-20 grid grid-cols-10 gap-0 aspect-square ${isWideScreen ? 'h-[77vh]' : 'h-[49vh]'}`}>
+        {Array(100).fill().map((_, i) => {
+          const col = i % 10;
+          const row = Math.floor(i / 10);
+          return (
+            <div 
+              key={i}
+              className={`h-[101%] w-[101%] bg-white opacity-0`}
+              tag='flippable'
+              coordinatex={col}
+              coordinatey={row}
+            ></div>
+          );
+        })}
+        <PlayerCharacter/>
+      </div>
+    );
+  }
+  else {
+    return (
+      <div className={`absolute top-0 left-0 z-20 grid grid-cols-10 gap-0 aspect-square ${isWideScreen ? 'h-[77vh]' : 'h-[49vh]'} pointer-events-none`}>
+        {Array(100).fill().map((_, i) => {
+          const col = i % 10;
+          const row = Math.floor(i / 10);
+          return (
+            <div 
+              key={i}
+              className={`h-[99%] w-[99%] bg-violet-700 opacity-0 pointer-events-none`}
+              coordinatex={col}
+              coordinatey={row}
+            ></div>
+          );
+        })}
+      </div>
+    );
+  }
 }
 
 function GameGrid() {
@@ -163,60 +227,90 @@ function GameGrid() {
 }
 
 function DPad() {
-  const { isWideScreen, isZoomed, playerDirection, setPlayerDirection, playerPosition, setPlayerPosition } = useGameState();
+  const { isWideScreen, playerDirection, setPlayerDirection, setPlayerPosition, cameraPosition, setCameraPosition, canMove, setCanMove } = useGameState();
   const btnSize = isWideScreen ? 'h-[8vh] w-[8vh]' : 'h-[7vh] w-[7vh]';
 
   const pressTimeRef = useRef(null);
-
+  const canMoveRef = useRef(canMove);
+  const playerDirectionRef = useRef(playerDirection);
+  const cameraPositionRef = useRef(cameraPosition);
+  useEffect(() => {
+      canMoveRef.current = canMove;
+      playerDirectionRef.current = playerDirection;
+      cameraPositionRef.current = cameraPosition;
+  }, [playerDirection, cameraPosition, canMove]);
+  
   const startMove = (degrees, dx = 0, dy = 0) => {
     setPlayerDirection(degrees);
-    const maxSpeed = 0.5;
-    const acceleration = 0.015;
+    setCanMove(true);
+    const maxSpeed = 0.8;
+    const acceleration = 0.08;
     let currentSpeed = 0;
     
     pressTimeRef.current = setInterval(() => {
       currentSpeed = Math.min(maxSpeed, currentSpeed + acceleration);
       const adjustedDx = (dx / 2) * currentSpeed;
       const adjustedDy = (dy / 2) * currentSpeed;
-      if (currentSpeed > 0.2) {
+      if (canMoveRef.current && currentSpeed > 0.2) {
+        const attackElement = document.querySelector(`[tag="atk1"]`);
+        //console.log(canMove);
+        if (attackElement && isOverEdge(attackElement)) {
+          
+          // teleport the player to the opposite side based on the direction
+          if (playerDirectionRef.current === 0) {
+            // r-l
+            if (cameraPositionRef.current.x < 9) {
+              setPlayerPosition((prev) => ({ ...prev, x: 7 }));
+              setCameraPosition((prev) => ({ ...prev, x: prev.x + 1 }));
+            }
+            else {
+              setCanMove(false)
+            }
+          } else if (playerDirectionRef.current === 180) {
+            // l-r
+            if (cameraPositionRef.current.x > 0) {
+              setPlayerPosition((prev) => ({ ...prev, x: 93 }));
+              setCameraPosition((prev) => ({ ...prev, x: prev.x - 1 }));
+            }
+            else {
+              setCanMove(false)
+            }
+            
+          } else if (playerDirectionRef.current === 90 ) {
+            // b-t
+            if (cameraPositionRef.current.y < 9) {
+              setPlayerPosition((prev) => ({ ...prev, y: 7 }));
+              setCameraPosition((prev) => ({ ...prev, y: prev.y + 1 }));
+            } else {
+              setCanMove(false)
+            }
+            
+          } else if (playerDirectionRef.current === 270 ) {
+            // t-b
+            if (cameraPositionRef.current.y > 0) {
+              setPlayerPosition((prev) => ({ ...prev, y: 93 }));
+              setCameraPosition((prev) => ({ ...prev, y: prev.y - 1 }));
+            } else {
+              setCanMove(false)
+            }
+              
+          }
+        }
         setPlayerPosition(prev => ({
           x: Math.max(0, Math.min(100, prev.x + adjustedDx)),
           y: Math.max(0, Math.min(100, prev.y + adjustedDy))
         }));
       }
       
-    }, 1);
+    }, 16 );
 
   };
 
   const stopMove = () => {
     clearInterval(pressTimeRef.current);
     pressTimeRef.current = null;
+    setCanMove(true)
   };
-
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      const attackElement = document.querySelector(`[tag="atk1"]`);
-      if (attackElement && isOverEdge(attackElement)) {
-        // teleport the player to the opposite side based on the direction
-        if (playerDirection === 0) {
-          // r-l
-          setPlayerPosition((prev) => ({ ...prev, x: 7 }));
-        } else if (playerDirection === 180) {
-          // l-r
-          setPlayerPosition((prev) => ({ ...prev, x: 93 }));
-        } else if (playerDirection === 90) {
-          // b-t
-          setPlayerPosition((prev) => ({ ...prev, y: 7 }));
-        } else if (playerDirection === 270) {
-          // t-b
-          setPlayerPosition((prev) => ({ ...prev, y: 93 }));
-        }
-      }
-    }, 100);
-    return () => clearInterval(interval);
-  }, [playerDirection, setPlayerPosition]);
 
   return (
     <div className={`relative w-[32vh] left-0 flex flex-col items-center sm:text-xl text-2xl font-black`}>
@@ -239,7 +333,7 @@ function DPad() {
           onTouchEnd={stopMove}
           style={{ fontSize: 'calc(4vh)' }}
         >🠈</button>
-        <div className={`relative z-10 ${btnSize} bg-gray-500`}></div>
+        <div className={`relative z-10 ${btnSize} bg-gray-500 text-center`}></div>
         <button 
           className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}
           onMouseDown={() => startMove(0, 2, 0)}
@@ -264,23 +358,23 @@ function DPad() {
 }
 
 function ActionButtons() {
-  const { isWideScreen, isZoomed, setIsZoomed } = useGameState();
+  const { isWideScreen, isZoomed, setIsZoomed, currentColor, setCurrentColor } = useGameState();
   const btnSize = isWideScreen ? 'h-[14vh] w-[14vh]' : 'h-[10vh] w-[10vh]';
   const attackPressRef = useRef(null);
-  
+
   const attack = (attackTag) => {
     const attackElement = document.querySelector(`[tag="${attackTag}"]`);
     if (attackElement) {
       if (attackTag === 'atk1') {
         const tile = getOverlappingTile(attackElement);
         if (tile) {
-          changeTileColor(tile)
+          changeTileColor(tile, currentColor)
         };
       } 
       else {
         const tiles = getOverlappingTiles(attackElement);
         if (tiles) {
-          tiles.forEach(tile => changeTileColor(tile))
+          tiles.forEach(tile => changeTileColor(tile, currentColor))
         };
       }
     }
@@ -288,6 +382,9 @@ function ActionButtons() {
 
   const chargeAttack = () => {
     const atkbtn = document.querySelector(`[tag="atkbtn"]`);
+    const atk1Element = document.querySelector(`[tag="atk1"]`);
+    const atk2Element = document.querySelector(`[tag="atk2"]`);
+    const atk3Element = document.querySelector(`[tag="atk3"]`);
     const startTime = Date.now();
     attackPressRef.current = {
       startTime,
@@ -295,10 +392,15 @@ function ActionButtons() {
         const duration = Date.now() - startTime;
         if (duration < 500) {
           atkbtn.style.backgroundColor = "#fb2c36"; 
+          atk1Element.style.opacity = 0.4;
         } else if (duration < 1000) {
           atkbtn.style.backgroundColor = "salmon";
+          atk1Element.style.opacity = 0;
+          atk2Element.style.opacity = 0.4;
         } else {
           atkbtn.style.backgroundColor = "pink";
+          atk2Element.style.opacity = 0;
+          atk3Element.style.opacity = 0.4;
         }
       }, 50)
     };
@@ -322,6 +424,22 @@ function ActionButtons() {
     const atkbtn = document.querySelector(`[tag="atkbtn"]`);
     atkbtn.style.backgroundColor = "#fb2c36";
     attackPressRef.current = null;
+    document.querySelector(`[tag="atk1"]`).style.opacity = 0;
+    document.querySelector(`[tag="atk2"]`).style.opacity = 0;
+    document.querySelector(`[tag="atk3"]`).style.opacity = 0;
+  };
+
+  const colorInputRef = useRef(null);
+  const debounceTimeoutRef = useRef(null);
+
+  const debounceColorChange = (e) => {
+    const value = e.target.value;
+    if (debounceTimeoutRef.current) {
+      clearTimeout(debounceTimeoutRef.current);
+    }
+    debounceTimeoutRef.current = setTimeout(() => {
+      setCurrentColor(value);
+    }, 1);
   };
 
   return (
@@ -332,14 +450,26 @@ function ActionButtons() {
           onClick={() => setIsZoomed(!isZoomed)}
           style={{ fontSize: 'calc(4vh)' }}
         >Z</button>
-        <button 
-          className={` ${btnSize} bg-blue-500 rounded-full shadow-amber-900 shadow-lg active:shadow-sm`}
-          style={{ fontSize: 'calc(4vh)' }}
-        >C</button>
+        <div className="relative">
+          <button
+            className={` ${btnSize} rounded-[33%] border-gray-400 border-[1vh] shadow-amber-900 shadow-lg p-0 active:shadow-sm text-gray-400 text-shadow-lg`}
+            onClick={() => colorInputRef.current.click()}
+            style={{ fontSize: 'calc(4vh)', backgroundColor: currentColor }}
+            tag="colbtn"
+          >C</button>
+          <input 
+            type="color" 
+            ref={colorInputRef}
+            value={currentColor}
+            onChange={debounceColorChange}
+            className="absolute top-0 left-full w-0 h-0"
+          />
+        </div>
       </div>
       <div className="relative w-full right-0 flex items-center space-y-[9%] space-x-[9%] text-lg font-black">
         <button 
-          className={` ${btnSize} bg-red-500 rounded-full shadow-amber-900 shadow-lg active:shadow-sm`}
+          disabled={!isZoomed}
+          className={`${btnSize} bg-red-500 rounded-full shadow-amber-900 shadow-lg active:shadow-sm ${!isZoomed ? 'cursor-not-allowed' : ''}`}
           onMouseDown={chargeAttack}
           onMouseUp={stopAttack}
           onMouseLeave={stopAttack}
@@ -354,13 +484,52 @@ function ActionButtons() {
 }
 
 function OptionButtons() {
-  const { isWideScreen, isZoomed } = useGameState();
+  const { isWideScreen, isZoomed, cameraPosition } = useGameState();
+  const [positionShown, setPositionShown] = useState(false);
+
+  const showPosition = () => {
+    if (!isZoomed) {
+      const tileElement = document.querySelector(
+        `[coordinatex="${cameraPosition.x}"][coordinatey="${cameraPosition.y}"]`
+      );
+      if (tileElement) {
+        let rotation = parseInt(tileElement.dataset.rotation || 0);
+
+        if (rotation < 180) {
+          rotation += 180;
+        }
+        else {
+          rotation -= 180;
+        }
+        tileElement.dataset.rotation = rotation;
+        
+        if (!positionShown) {
+          tileElement.style.opacity = 0.7;
+          setPositionShown(true);
+        }
+        else {
+          tileElement.style.opacity = 0;
+          setPositionShown(false);
+        }
+        tileElement.style.transition = 'transform 0.5s';
+        tileElement.style.transform = `rotateX(${rotation}deg)`;
+      }
+      else {
+        console.log("element not found");
+        
+      }
+    }
+  }
+
   if (isWideScreen) {
     return (
       <div className={`absolute bottom-[12vh] w-[160vh] flex items-center justify-center text-lg font-bold space-x-[1%]`}>
         <div className='relative flex flex-col justify-center items-center text-center'>
             <div style={{ fontSize: 'calc(2vh)' }}>Show Position</div>
-            <button className='bg-gray-400 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
+            <button 
+              className='bg-gray-400 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'
+              onClick={showPosition}
+            ></button>
         </div>
         <div className={`relative w-[90vh] h-[3vh] `}></div>
         <div className='relative flex flex-col justify-center items-center text-center'>
@@ -381,7 +550,10 @@ function OptionButtons() {
       <div className='relative flex flex-row justify-center items-center w-full space-x-[10%] font-bold'>
         <div className='relative flex flex-col justify-center items-center text-center'>
             <div style={{ fontSize: 'calc(1.5vh)' }}>Show Position</div>
-            <button className='bg-gray-400 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
+            <button 
+              className='bg-gray-400 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'
+              onClick={showPosition}
+            ></button>
         </div>
         <div className='relative flex flex-col justify-center items-center text-center'>
             <div style={{ fontSize: 'calc(1.5vh)' }}>Undo</div>

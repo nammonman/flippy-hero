@@ -5,10 +5,11 @@ const GameState = createContext();
 export function GameStateProvider({ children }) {
   const [isWideScreen, setIsWideScreen] = useState(true);
   const [isZoomed, setIsZoomed] = useState(true);
-  const [currentColor, setCurrentColor] = useState("#FFFFFF");
+  const [currentColor, setCurrentColor] = useState("#000000");
   const [playerDirection, setPlayerDirection] = useState(0) /* angle*/
   const [playerPosition, setPlayerPosition] = useState({ x: 50, y: 50 });
   const [cameraPosition, setCameraPosition] = useState({ x: 0, y: 0 }) /* position of top left tile in the 100x100 grid that the camera is displaying */
+  const [canMove, setCanMove] = useState(true);
 
   var gameGridData = Array.from({ length: 100 }, (_, row) =>
       Array.from({ length: 100 }, (_, col) => ({
@@ -30,7 +31,9 @@ export function GameStateProvider({ children }) {
     playerPosition,
     setPlayerPosition,
     cameraPosition,
-    setCameraPosition
+    setCameraPosition,
+    canMove,
+    setCanMove
   };
 
   return (
