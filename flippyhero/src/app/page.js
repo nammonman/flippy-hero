@@ -78,6 +78,7 @@ function DebugText() {
     isZoomed,
     setIsZoomed,
     gameGridData,
+    updateGameGridData,
     currentColor,
     setCurrentColor,
     playerDirection,
@@ -85,7 +86,14 @@ function DebugText() {
     playerPosition,
     setPlayerPosition,
     cameraPosition,
-    setCameraPosition} = useGameState();
+    setCameraPosition,
+    canMove,
+    setCanMove,
+    gameGridHistory,
+    updateGameGridHistory,
+    undo,
+    redo,
+    historyIndex} = useGameState();
   const [fps, setFps] = useState(0);
 
   useEffect(() => {
@@ -114,9 +122,19 @@ function DebugText() {
       FPS: {fps}<br/><br/>
       currentColor:<br/>{currentColor}<br/><br/>
       cameraPosition:<br/>{JSON.stringify(cameraPosition)}<br/><br/>
-      undoHistory:<br/>{"placeholder"}<br/><br/>
-      redoHistory:<br/>{"placeholder"}<br/>
+      gameGridHistory's length:<br/>{gameGridHistory.length - 1}<br/><br/>
+      historyIndex:<br/>{historyIndex}<br/>
     </div>
+  );
+}
+
+function AlertText({ text }) {
+  const { isWideScreen, isZoomed } = useGameState();
+  return (
+    <div 
+      className="absolute top-[50%] z-100 text-center h-fit py-[2vh] bg-violet-700 w-[100.1%] transform -translate-y-1/2 opacity-0 transition-opacity duration-500 pointer-events-none"
+      style={{ fontSize: 'calc(2vh)' }}
+    >{text}</div>
   );
 }
 
@@ -373,7 +391,7 @@ function DPad() {
 }
 
 function ActionButtons() {
-  const { isWideScreen, isZoomed, setIsZoomed, currentColor, setCurrentColor, updateGameGridData, cameraPosition } = useGameState();
+  const { isWideScreen, isZoomed, setIsZoomed, currentColor, setCurrentColor, gameGridData, updateGameGridData, cameraPosition, updateGameGridHistory } = useGameState();
   const btnSize = isWideScreen ? 'h-[14vh] w-[14vh]' : 'h-[10vh] w-[10vh]';
   const attackPressRef = useRef(null);
 
@@ -401,6 +419,7 @@ function ActionButtons() {
         };
       }
     }
+    updateGameGridHistory(gameGridData);
   };
 
   const chargeAttack = () => {
@@ -507,7 +526,7 @@ function ActionButtons() {
 }
 
 function OptionButtons() {
-  const { isWideScreen, isZoomed, cameraPosition } = useGameState();
+  const { isWideScreen, isZoomed, cameraPosition, undo, redo } = useGameState();
   const [positionShown, setPositionShown] = useState(false);
 
   const showPosition = () => {
@@ -556,13 +575,19 @@ function OptionButtons() {
         </div>
         <div className={`relative w-[90vh] h-[3vh] `}></div>
         <div className='relative flex flex-col justify-center items-center text-center'>
-            <div style={{ fontSize: 'calc(2vh)' }}>Undo</div>
-            <button className='bg-gray-300 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
+            <div style={{ fontSize: 'calc(2vh)' }} >Undo</div>
+            <button 
+              className='bg-gray-300 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'
+              onClick={undo}
+            ></button>
         </div>
         <div className={`relative w-[4vh] h-[3vh] `}></div>
         <div className='relative flex flex-col justify-center items-center text-center'>
             <div style={{ fontSize: 'calc(2vh)' }}>Redo</div>
-            <button className='bg-gray-300 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
+            <button 
+              className='bg-gray-300 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'
+              onClick={redo}
+            ></button>
         </div>
       </div>
       
@@ -628,6 +653,7 @@ function Home() {
             <div className="relative">
               <GameGrid/>
               <FlipGrid/>
+              <AlertText text="changes are outside of camera view"/>
             </div>
             <ActionButtons/>
             
@@ -640,6 +666,7 @@ function Home() {
             <div className="relative">
               <GameGrid/>
               <FlipGrid/>
+              <AlertText text="changes are outside of camera view"/>
             </div>
           </div>
           <div className='flex justify-between items-center mx-[5%] space-x-[3%] mt-[10%] mb-[10%]'>
