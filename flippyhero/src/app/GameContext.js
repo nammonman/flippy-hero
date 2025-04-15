@@ -11,11 +11,37 @@ export function GameStateProvider({ children }) {
   const [cameraPosition, setCameraPosition] = useState({ x: 0, y: 0 }) /* position of top left tile in the 100x100 grid that the camera is displaying */
   const [canMove, setCanMove] = useState(true);
 
-  var gameGridData = Array.from({ length: 100 }, (_, row) =>
-      Array.from({ length: 100 }, (_, col) => ({
+  const [gameGridData, setGameGridData] = useState(
+    Array.from({ length: 100 }, () =>
+      Array.from({ length: 100 }, () => ({
         color: "#FFFFFF",
       }))
-    );
+    )
+  );
+
+  const updateGameGridData = (x, y, color) => {
+    setGameGridData(prev => {
+      const newGrid = [...prev];
+      newGrid[y][x] = { ...prev[y][x], color };
+      return newGrid;
+    });
+  };
+
+  // save up to 20 gameGridData(s) as undo and redo
+  const [historyIndex, setHistoryIndex] = useState(0)
+  const [gameGridHistory, setGameGridHistory] = useState(
+    [
+      Array.from({ length: 100 }, () =>
+        Array.from({ length: 100 }, () => ({
+          color: "#FFFFFF",
+        }))
+      )
+    ]
+  );
+
+  const updateGameGridHistory = (gameGridData) => {
+    
+  };
   
 
   const value = {
@@ -24,6 +50,7 @@ export function GameStateProvider({ children }) {
     isZoomed,
     setIsZoomed,
     gameGridData,
+    updateGameGridData,
     currentColor,
     setCurrentColor,
     playerDirection,
@@ -33,7 +60,8 @@ export function GameStateProvider({ children }) {
     cameraPosition,
     setCameraPosition,
     canMove,
-    setCanMove
+    setCanMove,
+    
   };
 
   return (

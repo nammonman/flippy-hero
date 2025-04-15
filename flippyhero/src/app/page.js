@@ -54,6 +54,7 @@ function getOverlappingTiles(attackElement) {
 }
 
 function changeTileColor(tileElement, color) {
+
   let rotation = parseInt(tileElement.dataset.rotation || 0);
 
   if (rotation < 180) {
@@ -66,6 +67,9 @@ function changeTileColor(tileElement, color) {
   tileElement.style.backgroundColor = color;
   tileElement.style.transition = 'transform 0.5s';
   tileElement.style.transform = `rotateX(${rotation}deg)`;
+
+
+  
 }
 
 function DebugText() {
@@ -150,17 +154,20 @@ function PlayerCharacter() {
 }
 
 function FlipGrid() {
-  const { isWideScreen, isZoomed } = useGameState();
+  const { isWideScreen, isZoomed, gameGridData, cameraPosition } = useGameState();
   if (isZoomed) {
     return (
       <div className={`absolute top-0 left-0 z-20 grid grid-cols-10 gap-0 aspect-square ${isWideScreen ? 'h-[77vh]' : 'h-[49vh]'}`}>
         {Array(100).fill().map((_, i) => {
           const col = i % 10;
           const row = Math.floor(i / 10);
+          const x = col + (cameraPosition.x*10);
+          const y = row + (cameraPosition.y*10);
           return (
             <div 
               key={i}
-              className={`h-[101%] w-[101%] bg-white opacity-88`}
+              className={`h-[101%] w-[101%]  opacity-88`}
+              style={{ backgroundColor: gameGridData[y][x].color }}
               tag='flippable'
               coordinatex={col}
               coordinatey={row}
@@ -192,7 +199,7 @@ function FlipGrid() {
 }
 
 function GameGrid() {
-  const { isWideScreen, isZoomed } = useGameState();
+  const { isWideScreen, isZoomed, gameGridData } = useGameState();
   const canvasRef = useRef(null);
 
   useEffect(() => {
@@ -209,12 +216,17 @@ function GameGrid() {
 
     for (let row = 0; row < gridSize; row++) {
       for (let col = 0; col < gridSize; col++) {
-        const isEven = (row % 2 === 0 && col % 2 === 0) || (row % 2 === 1 && col % 2 === 1);
-        ctx.fillStyle = isEven ? '#e5e7eb' : '#9ca3af';
+        if (isZoomed) {
+          const isEven = (row % 2 === 0 && col % 2 === 0) || (row % 2 === 1 && col % 2 === 1);
+          ctx.fillStyle = isEven ? '#e5e7eb' : '#9ca3af';
+        }
+        else {
+          ctx.fillStyle = gameGridData[row][col].color;
+        }
         ctx.fillRect(col * tileSize, row * tileSize, tileSize+1, tileSize+1); // +1 to fix gaps
       }
     }
-  }, [isZoomed]);
+  }, [isZoomed, gameGridData]);
 
   return (
     <canvas
@@ -226,7 +238,7 @@ function GameGrid() {
 }
 
 function DPad() {
-  const { isWideScreen, playerDirection, setPlayerDirection, setPlayerPosition, cameraPosition, setCameraPosition, canMove, setCanMove } = useGameState();
+  const { isWideScreen, isZoomed, playerDirection, setPlayerDirection, setPlayerPosition, cameraPosition, setCameraPosition, canMove, setCanMove } = useGameState();
   const btnSize = isWideScreen ? 'h-[8vh] w-[8vh]' : 'h-[7vh] w-[7vh]';
 
   const pressTimeRef = useRef(null);
@@ -321,6 +333,7 @@ function DPad() {
         onTouchStart={() => startMove(90, 0, -2)}
         onTouchEnd={stopMove}
         style={{ fontSize: 'calc(4vh)' }}
+        disabled={!isZoomed}
       >🠉</button>
       <div className="flex">
         <button 
@@ -331,6 +344,7 @@ function DPad() {
           onTouchStart={() => startMove(180, -2, 0)}
           onTouchEnd={stopMove}
           style={{ fontSize: 'calc(4vh)' }}
+          disabled={!isZoomed}
         >🠈</button>
         <div className={`relative z-10 ${btnSize} bg-gray-500 text-center`}></div>
         <button 
@@ -341,6 +355,7 @@ function DPad() {
           onTouchStart={() => startMove(0, 2, 0)}
           onTouchEnd={stopMove}
           style={{ fontSize: 'calc(4vh)' }}
+          disabled={!isZoomed}
         >🠊</button>
       </div>
       <button 
@@ -351,13 +366,14 @@ function DPad() {
         onTouchStart={() => startMove(90, 0, 2)}
         onTouchEnd={stopMove}
         style={{ fontSize: 'calc(4vh)' }}
+        disabled={!isZoomed}
       >🠋</button>
     </div>
   );
 }
 
 function ActionButtons() {
-  const { isWideScreen, isZoomed, setIsZoomed, currentColor, setCurrentColor } = useGameState();
+  const { isWideScreen, isZoomed, setIsZoomed, currentColor, setCurrentColor, updateGameGridData, cameraPosition } = useGameState();
   const btnSize = isWideScreen ? 'h-[14vh] w-[14vh]' : 'h-[10vh] w-[10vh]';
   const attackPressRef = useRef(null);
 
@@ -367,13 +383,21 @@ function ActionButtons() {
       if (attackTag === 'atk1') {
         const tile = getOverlappingTile(attackElement);
         if (tile) {
-          changeTileColor(tile, currentColor)
+          changeTileColor(tile, currentColor);
+          const x = parseInt(tile.getAttribute('coordinatex')) + (cameraPosition.x*10);
+          const y = parseInt(tile.getAttribute('coordinatey')) + (cameraPosition.y*10);
+          updateGameGridData(x, y, currentColor);
         };
       } 
       else {
         const tiles = getOverlappingTiles(attackElement);
         if (tiles) {
-          tiles.forEach(tile => changeTileColor(tile, currentColor))
+          tiles.forEach(tile => {
+            changeTileColor(tile, currentColor)
+            const x = parseInt(tile.getAttribute('coordinatex')) + (cameraPosition.x*10);
+            const y = parseInt(tile.getAttribute('coordinatey')) + (cameraPosition.y*10);
+            updateGameGridData(x, y, currentColor);
+          });
         };
       }
     }
@@ -468,7 +492,7 @@ function ActionButtons() {
       <div className="relative w-full right-0 flex items-center space-y-[9%] space-x-[9%] text-lg font-black">
         <button 
           disabled={!isZoomed}
-          className={`${btnSize} bg-red-500 rounded-full shadow-amber-900 shadow-lg active:shadow-sm ${!isZoomed ? 'cursor-not-allowed' : ''}`}
+          className={`${btnSize} bg-red-500 rounded-full shadow-amber-900 shadow-lg active:shadow-sm `}
           onMouseDown={chargeAttack}
           onMouseUp={stopAttack}
           onMouseLeave={stopAttack}
