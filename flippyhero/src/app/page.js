@@ -175,7 +175,7 @@ function FlipGrid() {
   const { isWideScreen, isZoomed, gameGridData, cameraPosition } = useGameState();
   if (isZoomed) {
     return (
-      <div className={`absolute top-0 left-0 z-20 grid grid-cols-10 gap-0 aspect-square ${isWideScreen ? 'h-[77vh]' : 'h-[49vh]'}`}>
+      <div className={`absolute top-0 left-0 z-20 grid grid-cols-10 gap-0 aspect-square ${isWideScreen ? 'h-[77vh]' : 'h-[40.5vh]'}`}>
         {Array(100).fill().map((_, i) => {
           const col = i % 10;
           const row = Math.floor(i / 10);
@@ -198,7 +198,7 @@ function FlipGrid() {
   }
   else {
     return (
-      <div className={`absolute top-0 left-0 z-20 grid grid-cols-10 gap-0 aspect-square ${isWideScreen ? 'h-[77vh]' : 'h-[49vh]'} pointer-events-none`}>
+      <div className={`absolute top-0 left-0 z-20 grid grid-cols-10 gap-0 aspect-square ${isWideScreen ? 'h-[77vh]' : 'h-[40.5vh]'} pointer-events-none`}>
         {Array(100).fill().map((_, i) => {
           const col = i % 10;
           const row = Math.floor(i / 10);
@@ -249,7 +249,7 @@ function GameGrid() {
   return (
     <canvas
       ref={canvasRef}
-      className={`relative aspect-square ${isWideScreen ? 'h-[77vh]' : 'h-[49vh]'}`}
+      className={`relative aspect-square ${isWideScreen ? 'h-[77vh]' : 'h-[40.5vh]'}`}
       tag="canvas"
     />
   );
@@ -257,7 +257,7 @@ function GameGrid() {
 
 function DPad() {
   const { isWideScreen, isZoomed, playerDirection, setPlayerDirection, setPlayerPosition, cameraPosition, setCameraPosition, canMove, setCanMove } = useGameState();
-  const btnSize = isWideScreen ? 'h-[8vh] w-[8vh]' : 'h-[7vh] w-[7vh]';
+  const btnSize = isWideScreen ? 'h-[8vh] w-[8vh]' : 'h-[6vh] w-[6vh]';
 
   const pressTimeRef = useRef(null);
   const canMoveRef = useRef(canMove);
@@ -392,7 +392,7 @@ function DPad() {
 
 function ActionButtons() {
   const { isWideScreen, isZoomed, setIsZoomed, currentColor, setCurrentColor, gameGridData, updateGameGridData, cameraPosition, updateGameGridHistory } = useGameState();
-  const btnSize = isWideScreen ? 'h-[14vh] w-[14vh]' : 'h-[10vh] w-[10vh]';
+  const btnSize = isWideScreen ? 'h-[14vh] w-[14vh]' : 'h-[8vh] w-[8vh]';
   const attackPressRef = useRef(null);
 
   const attack = (attackTag) => {
@@ -525,7 +525,7 @@ function ActionButtons() {
   );
 }
 
-function OptionButtons() {
+function OptionButtons({ setEnableOptions, setEnableHelp }) {
   const { isWideScreen, isZoomed, cameraPosition, undo, redo } = useGameState();
   const [positionShown, setPositionShown] = useState(false);
 
@@ -566,16 +566,35 @@ function OptionButtons() {
   if (isWideScreen) {
     return (
       <div className={`absolute bottom-[12vh] w-[160vh] flex items-center justify-center text-lg font-bold space-x-[1%]`}>
+        <div className='absolute bottom-[78vh] flex opacity-80'>
+          <div className='relative flex justify-center items-center text-center text-amber-600 space-x-[10%]'>
+            <div className='text-nowrap' style={{ fontSize: 'calc(2.2vh)' }}>Help</div>
+            <button 
+              className='bg-amber-400 w-[8vh] h-[3vh] rounded-full shadow-amber-600 shadow-md active:shadow-sm'
+              onClick={() => setEnableHelp(true)}
+            ></button>
+          </div>
+        </div>
+        <div className='absolute top-[8.4vh] flex opacity-80'>
+          <div className='relative flex justify-center items-center text-center text-amber-600 space-x-[10%]'>
+            <div className='text-nowrap' style={{ fontSize: 'calc(2.2vh)' }}>Options</div>
+            <button 
+              className='bg-amber-400 w-[8vh] h-[3vh] rounded-full shadow-amber-600 shadow-md active:shadow-sm'
+              onClick={() => setEnableOptions(true)}
+            ></button>
+          </div>
+        </div>
+        
         <div className='relative flex flex-col justify-center items-center text-center'>
-            <div style={{ fontSize: 'calc(2vh)' }}>Show Position</div>
+            <div style={{ fontSize: 'calc(2.2vh)' }}>Show Position</div>
             <button 
               className='bg-gray-400 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'
               onClick={showPosition}
             ></button>
         </div>
-        <div className={`relative w-[90vh] h-[3vh] `}></div>
+        <div className={`relative w-[88vh] h-[3vh] `}></div>
         <div className='relative flex flex-col justify-center items-center text-center'>
-            <div style={{ fontSize: 'calc(2vh)' }} >Undo</div>
+            <div style={{ fontSize: 'calc(2.2vh)' }} >Undo</div>
             <button 
               className='bg-gray-300 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'
               onClick={undo}
@@ -583,33 +602,48 @@ function OptionButtons() {
         </div>
         <div className={`relative w-[4vh] h-[3vh] `}></div>
         <div className='relative flex flex-col justify-center items-center text-center'>
-            <div style={{ fontSize: 'calc(2vh)' }}>Redo</div>
+            <div style={{ fontSize: 'calc(2.2vh)' }}>Redo</div>
             <button 
               className='bg-gray-300 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'
               onClick={redo}
             ></button>
         </div>
       </div>
-      
     );
   }
   else {
     return (
-      <div className='relative flex flex-row justify-center items-center w-full space-x-[10%] font-bold'>
-        <div className='relative flex flex-col justify-center items-center text-center'>
-            <div style={{ fontSize: 'calc(1.5vh)' }}>Show Position</div>
+      <div className='relative flex flex-row justify-center items-center w-full font-bold'>
+        <div className='relative flex flex-col justify-center items-center text-center mx-[5%]'>
+            <div className='' style={{ fontSize: 'calc(1.4vh)' }}>Show Position</div>
             <button 
-              className='bg-gray-400 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'
+              className='bg-gray-400 w-[6vh] h-[2vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'
               onClick={showPosition}
             ></button>
         </div>
-        <div className='relative flex flex-col justify-center items-center text-center'>
-            <div style={{ fontSize: 'calc(1.5vh)' }}>Undo</div>
-            <button className='bg-gray-300 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
+        <div className='relative flex flex-col justify-center items-center text-center mx-[5%]'>
+            <div style={{ fontSize: 'calc(1.4vh)' }}>Undo</div>
+            <button className='bg-gray-300 w-[6vh] h-[2vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
         </div>
-        <div className='relative flex flex-col justify-center items-center text-center'>
-            <div style={{ fontSize: 'calc(1.5vh)' }}>Redo</div>
-            <button className='bg-gray-300 w-[8vh] h-[3vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
+        <div className='relative flex flex-col justify-center items-center text-center mx-[5%]'>
+            <div style={{ fontSize: 'calc(1.4vh)' }}>Redo</div>
+            <button className='bg-gray-300 w-[6vh] h-[2vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
+        </div>
+        <div className='absolute bottom-[-5vh] w-full flex justify-between px-[4.5vh] opacity-80 space-x-[20%]'>
+          <div className='relative flex  items-center text-center text-amber-600 space-x-[10%]'>
+            <div className='text-nowrap' style={{ fontSize: 'calc(1.4vh)' }}>Help</div>
+            <button 
+              className='bg-amber-400 w-[6vh] h-[2vh] rounded-full shadow-amber-600 shadow-md active:shadow-sm flex-shrink-0'
+              onClick={() => setEnableHelp(true)}
+            ></button>
+          </div>
+          <div className='relative flex  items-center text-center text-amber-600 space-x-[10%]'>
+            <div className='text-nowrap' style={{ fontSize: 'calc(1.4vh)' }}>Options</div>
+            <button 
+              className='bg-amber-400 w-[6vh] h-[2vh] rounded-full shadow-amber-600 shadow-md active:shadow-sm flex-shrink-0'
+              onClick={() => setEnableOptions(true)}
+            ></button>
+          </div>
         </div>
       </div>
     );
@@ -629,7 +663,11 @@ function SizeIndicator() {
 }
 
 function Home() {
-  const { isWideScreen, setIsWideScreen, setIsZoomed } = useGameState();
+  const { isWideScreen, setIsWideScreen, setIsZoomed, updateGameGridData, updateGameGridHistory, gameGridData } = useGameState();
+  const [enableDebug, setEnableDebug] = useState(false);
+  const [enableWelcome, setEnableWelcome] = useState(true);
+  const [enableOptions, setEnableOptions] = useState(false);
+  const [enableHelp, setEnableHelp] = useState(false);
 
   useEffect(() => {
     const checkAspectRatio = () => {
@@ -642,10 +680,107 @@ function Home() {
     return () => window.removeEventListener('resize', checkAspectRatio);
   }, [setIsWideScreen]);
 
-  
+  const clearCanvas = () => {
+    for (let y = 0; y < 100; y++) {
+      for (let x = 0; x < 100; x++) {
+        updateGameGridData(x, y, "#FFFFFF");
+      }
+    }
+    updateGameGridHistory(
+      Array.from({ length: 100 }, (_, y) =>
+        Array.from({ length: 100 }, (_, x) => ({
+          color: "#FFFFFF",
+        }))
+      )
+    );
+  };
+
+  const btnSize = isWideScreen ? 'h-[14vh] w-[14vh]' : 'h-[10vh] w-[10vh]';
 
   return (
     <main className={`flex bg-gray-900 w-screen h-screen text-black overflow-hidden justify-center items-center  ${sixtyfour.className}`} tag="edge">
+      {enableWelcome ?(<div className='absolute z-100 h-full w-full backdrop-blur-lg flex items-center justify-center'>
+        <div className={`h-fit ${isWideScreen ? 'w-fit' : ''} bg-amber-600 rounded-4xl shadow-2xl text-center p-[2vh] m-[2vh] text-amber-50`}>
+          <div className='my-[4vh] mx-[2vh] '>Welcome to FLIPPYHERO!</div>
+          <div className='my-[4vh] mx-[2vh] font-mono'>
+            Paint but you are a hero! <br/><br/>
+            This is a web based game where you can play as a hero who has the abliity to flip tiles on a grid to any color and create images in a unique way. <br/><br/>
+            Your goal is to express your creativity on a 100x100 grid.<br/><br/>
+            <button className='font-bold underline' onClick={() => setEnableWelcome(false)}>Let's go!</button>
+          </div>
+        </div>
+      </div>) : null}
+      {enableOptions ?(<div className='absolute z-100 h-full w-full backdrop-blur-lg flex items-center justify-center'>
+        <div className={`h-fit ${isWideScreen ? 'w-fit' : ''} bg-amber-600 rounded-4xl shadow-2xl text-center p-[2vh] m-[2vh] text-amber-50`}>
+          <div className='my-[4vh] mx-[2vh] '>Options</div>
+          <div className='my-[4vh] mx-[2vh] flex justify-between font-mono'>
+            Toggle fullscreen
+            <button 
+              className='font-bold underline ml-[10vh]' 
+              onClick={() => {
+                if (!document.fullscreenElement) {
+                  document.documentElement.requestFullscreen();
+                } else {
+                  document.exitFullscreen();
+                }
+              }}
+            >Click</button>
+          </div>
+          <div className='my-[4vh] mx-[2vh] flex justify-between font-mono'>
+            Switch portrait/landscape
+            <button 
+              className='font-bold underline ml-[10vh]' 
+              onClick={() => setIsWideScreen(!isWideScreen)}
+            >Click</button>
+          </div>
+          <div className='my-[4vh] mx-[2vh] flex justify-between font-mono'>
+            Clear canvas
+            <button 
+              className='font-bold underline ml-[10vh]' 
+              onClick={clearCanvas}
+            >Click</button>
+          </div>
+          <div className='my-[4vh] mx-[2vh] flex justify-between font-mono'>
+            View source code
+            <button 
+              className='font-bold underline ml-[10vh]' 
+              onClick={() => {
+                window.open('https://github.com/nammonman/flippy-hero')
+              }}
+              >Click</button>
+          </div>
+          <div className='flex justify-center my-[4vh] mx-[2vh] '>
+            <button className='font-bold underline font-mono' onClick={() => setEnableOptions(false)}>Return to game</button>
+          </div>
+        </div>
+      </div>) : null}
+      {enableHelp ?(<div className='absolute z-100 h-full w-full backdrop-blur-lg flex items-center justify-center'>
+        <div className={`h-fit ${isWideScreen ? 'w-fit' : ''} bg-amber-600 rounded-4xl shadow-2xl text-center p-[2vh] m-[2vh] text-amber-50`}>
+          <div className='my-[4vh] mx-[2vh] '>How to Play?</div>
+          <div className='flex justify-left my-[4vh] mx-[2vh] '>
+            <button 
+              className={`w-15 h-15 bg-red-500 rounded-full shadow-xl mr-[4vh] flex-shrink-0`}
+            >A</button>
+            <div className='font-mono text-left '>This is the <b>Attack</b> button. <br/> <u>TAP</u> to flip a tile in front or <u>HOLD</u> up to 2 seconds to flip more tiles. </div>
+          </div>
+          <div className='flex justify-left my-[4vh] mx-[2vh] '>
+            <button 
+              className={`w-15 h-15 bg-green-500 rounded-full shadow-xl mr-[4vh] flex-shrink-0`}
+            >Z</button>
+            <div className='font-mono text-left '>This is the <b>Zoom</b> button. <br/> <u>TAP</u> to toggle between the full canvas view and the zoomed view. </div>
+          </div>
+          <div className='flex justify-left my-[4vh] mx-[2vh] '>
+            <button 
+              className={`w-15 h-15 bg-blue-700 rounded-[33%] border-gray-400 border-[1vh] shadow-xl p-0 active:shadow-sm text-gray-400 text-shadow-lg mr-[4vh] flex-shrink-0`}
+            >C</button>
+            <div className='font-mono text-left '>This is the <b>Color</b> button. <br/> <u>TAP</u> to select a color. </div>
+          </div>
+          <div className='flex justify-center my-[4vh] mx-[2vh] '>
+            <button className='font-bold underline font-mono' onClick={() => setEnableHelp(false)}>Return to game</button>
+          </div>
+          
+        </div>
+      </div>) : null}
       {isWideScreen ? (
         <div className='bg-amber-300 rounded-4xl w-[160vh] h-[90vh] flex items-center shadow-inner shadow-amber-50' tag="edge">
           <div className='flex justify-between items-center p-[3%] space-x-[3%] w-full h-full'>
@@ -658,10 +793,10 @@ function Home() {
             <ActionButtons/>
             
           </div>
-          <OptionButtons/>
+          <OptionButtons setEnableOptions={setEnableOptions} setEnableHelp={setEnableHelp}/>
         </div>
       ) : (
-        <div className='bg-amber-300 rounded-4xl h-[96vh] w-[54vh] justify-center items-center shadow-inner shadow-amber-700' tag="edge">
+        <div className='bg-amber-300 rounded-4xl h-[82vh] w-[45vh] justify-center items-center shadow-inner shadow-amber-700' tag="edge">
           <div className='flex justify-between items-center m-[5%] '>
             <div className="relative">
               <GameGrid/>
@@ -673,10 +808,10 @@ function Home() {
             <DPad/>
             <ActionButtons/>
           </div>
-          <OptionButtons/>
+          <OptionButtons setEnableOptions={setEnableOptions} setEnableHelp={setEnableHelp}/>
         </div>
       )}
-      <DebugText/>
+      {enableDebug ? (<DebugText/>) : null}
     </main>    
   );
 }
