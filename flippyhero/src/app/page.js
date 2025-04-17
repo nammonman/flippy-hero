@@ -566,23 +566,23 @@ function OptionButtons({ setEnableOptions, setEnableHelp }) {
   if (isWideScreen) {
     return (
       <div className={`absolute bottom-[12vh] w-[160vh] flex items-center justify-center text-lg font-bold space-x-[1%]`}>
-        <div className='absolute bottom-[78vh] flex opacity-80'>
-          <div className='relative flex justify-center items-center text-center text-amber-600 space-x-[10%]'>
+        <div className='absolute top-[8.4vh] flex opacity-80 space-x-[10vh]'>
+        <div className='relative flex justify-center items-center text-center text-amber-600 space-x-[10%]'>
             <div className='text-nowrap' style={{ fontSize: 'calc(2.2vh)' }}>Help</div>
             <button 
               className='bg-amber-400 w-[8vh] h-[3vh] rounded-full shadow-amber-600 shadow-md active:shadow-sm'
               onClick={() => setEnableHelp(true)}
             ></button>
           </div>
-        </div>
-        <div className='absolute top-[8.4vh] flex opacity-80'>
           <div className='relative flex justify-center items-center text-center text-amber-600 space-x-[10%]'>
+
             <div className='text-nowrap' style={{ fontSize: 'calc(2.2vh)' }}>Options</div>
             <button 
               className='bg-amber-400 w-[8vh] h-[3vh] rounded-full shadow-amber-600 shadow-md active:shadow-sm'
               onClick={() => setEnableOptions(true)}
             ></button>
           </div>
+          
         </div>
         
         <div className='relative flex flex-col justify-center items-center text-center'>

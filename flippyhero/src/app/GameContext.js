@@ -1,4 +1,4 @@
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 
 const GameState = createContext();
 
@@ -11,13 +11,38 @@ export function GameStateProvider({ children }) {
   const [cameraPosition, setCameraPosition] = useState({ x: 0, y: 0 }); /* position of top left tile in the 100x100 grid that the camera is displaying */
   const [canMove, setCanMove] = useState(true);
 
-  const [gameGridData, setGameGridData] = useState(
-    Array.from({ length: 100 }, () =>
-      Array.from({ length: 100 }, () => ({
-        color: "#FFFFFF",
-      }))
-    )
+  const defaultGrid = Array.from({ length: 100 }, () =>
+    Array.from({ length: 100 }, () => ({
+      color: "#FFFFFF",
+    }))
   );
+  const [gameGridData, setGameGridData] = useState(defaultGrid);
+
+  // load from localstorage only after mounted
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedGrid = localStorage.getItem('flippyhero_grid');
+      if (savedGrid) {
+        try {
+          const parsedGrid = JSON.parse(savedGrid)
+          setGameGridData(parsedGrid);
+          updateGameGridHistory(parsedGrid);
+        } catch {
+          // fallback to default if corrupted
+        }
+      }
+      else {
+        updateGameGridHistory(gameGridData);
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem('flippyhero_grid', JSON.stringify(gameGridData));
+    }
+  }, [gameGridData]);
+
 
   const updateGameGridData = (x, y, color) => {
     setGameGridData(prev => {
@@ -58,7 +83,7 @@ export function GameStateProvider({ children }) {
 
   const undo = () => {
     setHistoryIndex(prev => {
-      if (prev > 0) {
+      if (prev > 1) {
         setGameGridData(gameGridHistory[prev - 1].map(row => row.map(cell => ({ ...cell }))));
         return prev - 1;
       }
