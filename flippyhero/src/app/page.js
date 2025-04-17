@@ -614,22 +614,7 @@ function OptionButtons({ setEnableOptions, setEnableHelp }) {
   else {
     return (
       <div className='relative flex flex-row justify-center items-center w-full font-bold'>
-        <div className='relative flex flex-col justify-center items-center text-center mx-[5%]'>
-            <div className='' style={{ fontSize: 'calc(1.4vh)' }}>Show Position</div>
-            <button 
-              className='bg-gray-400 w-[6vh] h-[2vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'
-              onClick={showPosition}
-            ></button>
-        </div>
-        <div className='relative flex flex-col justify-center items-center text-center mx-[5%]'>
-            <div style={{ fontSize: 'calc(1.4vh)' }}>Undo</div>
-            <button className='bg-gray-300 w-[6vh] h-[2vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
-        </div>
-        <div className='relative flex flex-col justify-center items-center text-center mx-[5%]'>
-            <div style={{ fontSize: 'calc(1.4vh)' }}>Redo</div>
-            <button className='bg-gray-300 w-[6vh] h-[2vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
-        </div>
-        <div className='absolute bottom-[-5vh] w-full flex justify-between px-[4.5vh] opacity-80 space-x-[20%]'>
+        <div className='absolute bottom-[32vh] w-full flex justify-between px-[4.5vh] opacity-80 space-x-[20%]'>
           <div className='relative flex  items-center text-center text-amber-600 space-x-[10%]'>
             <div className='text-nowrap' style={{ fontSize: 'calc(1.4vh)' }}>Help</div>
             <button 
@@ -645,6 +630,22 @@ function OptionButtons({ setEnableOptions, setEnableHelp }) {
             ></button>
           </div>
         </div>
+        <div className='relative flex flex-col justify-center items-center text-center mx-[5%]'>
+            <div className='' style={{ fontSize: 'calc(1.4vh)' }}>Show Position</div>
+            <button 
+              className='bg-gray-400 w-[6vh] h-[2vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'
+              onClick={showPosition}
+            ></button>
+        </div>
+        <div className='relative flex flex-col justify-center items-center text-center mx-[5%]'>
+            <div style={{ fontSize: 'calc(1.4vh)' }}>Undo</div>
+            <button className='bg-gray-300 w-[6vh] h-[2vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
+        </div>
+        <div className='relative flex flex-col justify-center items-center text-center mx-[5%]'>
+            <div style={{ fontSize: 'calc(1.4vh)' }}>Redo</div>
+            <button className='bg-gray-300 w-[6vh] h-[2vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
+        </div>
+        
       </div>
     );
   }
@@ -771,7 +772,7 @@ function Home() {
           </div>
           <div className='flex justify-left my-[4vh] mx-[2vh] '>
             <button 
-              className={`w-15 h-15 bg-blue-700 rounded-[33%] border-gray-400 border-[1vh] shadow-xl p-0 active:shadow-sm text-gray-400 text-shadow-lg mr-[4vh] flex-shrink-0`}
+              className={`w-15 h-15 bg-blue-700 rounded-[33%] border-gray-400 border-[1vh] shadow-xl p-0 text-gray-400 text-shadow-lg mr-[4vh] flex-shrink-0`}
             >C</button>
             <div className='font-mono text-left '>This is the <b>Color</b> button. <br/> <u>TAP</u> to select a color. </div>
           </div>
@@ -796,7 +797,7 @@ function Home() {
           <OptionButtons setEnableOptions={setEnableOptions} setEnableHelp={setEnableHelp}/>
         </div>
       ) : (
-        <div className='bg-amber-300 rounded-4xl h-[82vh] w-[45vh] justify-center items-center shadow-inner shadow-amber-700' tag="edge">
+        <div className='bg-amber-300 rounded-4xl h-[84vh] w-[45vh] justify-center items-center shadow-inner shadow-amber-700' tag="edge">
           <div className='flex justify-between items-center m-[5%] '>
             <div className="relative">
               <GameGrid/>
@@ -804,7 +805,7 @@ function Home() {
               <AlertText text="changes are outside of camera view"/>
             </div>
           </div>
-          <div className='flex justify-between items-center mx-[5%] space-x-[3%] mt-[10%] mb-[10%]'>
+          <div className='flex justify-between items-center mx-[5%] space-x-[3%] mt-[20%] mb-[10%]'>
             <DPad/>
             <ActionButtons/>
           </div>
