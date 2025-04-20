@@ -768,7 +768,7 @@ function Home() {
             <button 
               className={`w-15 h-15 bg-green-500 rounded-full shadow-xl mr-[4vh] flex-shrink-0`}
             >Z</button>
-            <div className='font-mono text-left '>This is the <b>Zoom</b> button. <br/> <u>TAP</u> to toggle between the full canvas view and the zoomed view. </div>
+            <div className='font-mono text-left '>This is the <b>Zoom</b> button. <br/> <u>TAP</u> to toggle between the full canvas view and the zoomed view. <br/> You can right click (or hold) the canvas to save the image.</div>
           </div>
           <div className='flex justify-left my-[4vh] mx-[2vh] '>
             <button 
