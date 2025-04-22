@@ -141,12 +141,14 @@ function AlertText({ text }) {
 function PlayerCharacter() {
   const { isWideScreen, isZoomed, playerDirection, playerPosition } = useGameState();
 
+
   const directionImage = {
-    0: '/player_normal/right.png',  
-    90: '/player_normal/down.png',  
-    180: '/player_normal/left.png', 
-    270: '/player_normal/up.png',   
+    0: '/right.png',  
+    90: '/down.png',  
+    180: '/left.png', 
+    270: '/up.png',   
   };
+  
 
   return (
     isZoomed && (
@@ -159,11 +161,10 @@ function PlayerCharacter() {
         }}
       >
         <img
-          src={directionImage[playerDirection]}
-          alt="Player"
-          className="w-full h-full z-50 absolute top-0 left-0 pointer-events-none select-none"
+          src={`player_attacking/${directionImage[playerDirection]}`}
+          className="w-full h-full z-50 absolute pointer-events-none select-none"
           draggable={false}
-          style={{ imageRendering: 'pixelated' }}
+          style={{ imageRendering: 'pixelated'}}
         />
         <div className='z-1 w-full h-full' style={{transform: `rotate(${playerDirection}deg)`}}>
           <div 
@@ -276,15 +277,18 @@ function DPad() {
   const btnSize = isWideScreen ? 'h-[8vh] w-[8vh]' : 'h-[6vh] w-[6vh]';
 
   const pressTimeRef = useRef(null);
+  const activeInputRef = useRef(null);
   const canMoveRef = useRef(canMove);
   const playerDirectionRef = useRef(playerDirection);
   const cameraPositionRef = useRef(cameraPosition);
+
   useEffect(() => {
-      canMoveRef.current = canMove;
-      playerDirectionRef.current = playerDirection;
-      cameraPositionRef.current = cameraPosition;
+    canMoveRef.current = canMove;
+    playerDirectionRef.current = playerDirection;
+    cameraPositionRef.current = cameraPosition;
   }, [playerDirection, cameraPosition, canMove]);
   
+
   const startMove = (degrees, dx = 0, dy = 0) => {
     setPlayerDirection(degrees);
     setCanMove(true);
@@ -655,11 +659,17 @@ function OptionButtons({ setEnableOptions, setEnableHelp }) {
         </div>
         <div className='relative flex flex-col justify-center items-center text-center mx-[5%]'>
             <div style={{ fontSize: 'calc(1.4vh)' }}>Undo</div>
-            <button className='bg-gray-300 w-[6vh] h-[2vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
+            <button 
+              className='bg-gray-300 w-[6vh] h-[2vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'
+              onClick={undo}
+            ></button>
         </div>
         <div className='relative flex flex-col justify-center items-center text-center mx-[5%]'>
             <div style={{ fontSize: 'calc(1.4vh)' }}>Redo</div>
-            <button className='bg-gray-300 w-[6vh] h-[2vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'></button>
+            <button 
+              className='bg-gray-300 w-[6vh] h-[2vh] rounded-full shadow-amber-900 shadow-md active:shadow-sm'
+              onClick={redo}
+            ></button>
         </div>
         
       </div>
@@ -784,7 +794,7 @@ function Home() {
             <button 
               className={`w-15 h-15 bg-green-500 rounded-full shadow-xl mr-[4vh] flex-shrink-0`}
             >Z</button>
-            <div className='font-mono text-left '>This is the <b>Zoom</b> button. <br/> <u>TAP</u> to toggle between the full canvas view and the zoomed view. <br/> You can right click (or hold) the canvas to save the image.</div>
+            <div className='font-mono text-left '>This is the <b>Zoom</b> button. <br/> <u>TAP</u> to toggle between the full canvas view and the zoomed view. <br/> You can right click the canvas (or hold on mobile) to save the image.</div>
           </div>
           <div className='flex justify-left my-[4vh] mx-[2vh] '>
             <button 
