@@ -142,10 +142,10 @@ function PlayerCharacter() {
   const { isWideScreen, isZoomed, playerDirection, playerPosition } = useGameState();
 
   const directionImage = {
-    0: '/right.png',  
-    90: '/down.png',  
-    180: '/left.png', 
-    270: '/up.png',   
+    0: 'right.png',  
+    90: 'down.png',  
+    180: 'left.png', 
+    270: 'up.png',   
   };
   
   return (
