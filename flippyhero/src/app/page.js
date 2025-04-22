@@ -141,30 +141,46 @@ function AlertText({ text }) {
 function PlayerCharacter() {
   const { isWideScreen, isZoomed, playerDirection, playerPosition } = useGameState();
 
+  const directionImage = {
+    0: '/player_normal/right.png',  
+    90: '/player_normal/down.png',  
+    180: '/player_normal/left.png', 
+    270: '/player_normal/up.png',   
+  };
+
   return (
     isZoomed && (
       <div 
-        className={`absolute z-30 bg-violet-700 aspect-square ${isWideScreen ? 'h-[11vh]' : 'h-[7vh]'} `}
+        className={`absolute z-40 aspect-square ${isWideScreen ? 'h-[11vh]' : 'h-[7vh]'} `}
         style={{
           top: `${playerPosition.y}%`,
           left: `${playerPosition.x}%`,
-          transform: `translate(-50%, -50%) rotate(${playerDirection}deg)`
+          transform: 'translate(-50%, -50%)',
         }}
       >
-        <div 
-          className={`absolute top-[50%] left-[130%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[1vh]' : 'h-[1vh]'} transform -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-0`}
-          tag="atk1"
-        ></div>
-        
-        <div 
-          className={`absolute top-[50%] left-[145%] z-40 bg-violet-900 ${isWideScreen ? 'h-[17.5vh] w-[8.8vh]' : 'h-[11.3vh] w-[5.8vh]'} transform -translate-x-1/2 -translate-y-1/2  pointer-events-none opacity-0`}
-          tag="atk2"
-        ></div>
-        
-        <div 
-          className={`absolute top-[50%] left-[50%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[30.5vh]' : 'h-[19.5vh]'} transform -translate-x-1/2 -translate-y-1/2  pointer-events-none opacity-0`}
-          tag="atk3"
-        ></div>
+        <img
+          src={directionImage[playerDirection]}
+          alt="Player"
+          className="w-full h-full z-50 absolute top-0 left-0 pointer-events-none select-none"
+          draggable={false}
+          style={{ imageRendering: 'pixelated' }}
+        />
+        <div className='z-1 w-full h-full' style={{transform: `rotate(${playerDirection}deg)`}}>
+          <div 
+            className={`absolute top-[50%] left-[130%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[1vh]' : 'h-[1vh]'} transform -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-0`}
+            tag="atk1"
+          ></div>
+          
+          <div 
+            className={`absolute top-[50%] left-[145%] z-40 bg-violet-900 ${isWideScreen ? 'h-[17.5vh] w-[8.8vh]' : 'h-[11.3vh] w-[5.8vh]'} transform -translate-x-1/2 -translate-y-1/2  pointer-events-none opacity-0`}
+            tag="atk2"
+          ></div>
+          
+          <div 
+            className={`absolute top-[50%] left-[50%] z-40 bg-violet-900 aspect-square ${isWideScreen ? 'h-[30.5vh]' : 'h-[19.5vh]'} transform -translate-x-1/2 -translate-y-1/2  pointer-events-none opacity-0`}
+            tag="atk3"
+          ></div>
+        </div>
         
       </div>
     )
@@ -783,7 +799,7 @@ function Home() {
         </div>
       </div>) : null}
       {isWideScreen ? (
-        <div className='bg-amber-300 rounded-4xl w-[160vh] h-[90vh] flex items-center shadow-inner shadow-amber-50' tag="edge">
+        <div className='bg-amber-300 rounded-4xl w-[160vh] h-[90vh] flex items-center shadow-inner shadow-amber-50 z-10' tag="edge">
           <div className='flex justify-between items-center p-[3%] space-x-[3%] w-full h-full'>
             <DPad/>
             <div className="relative">
@@ -797,7 +813,7 @@ function Home() {
           <OptionButtons setEnableOptions={setEnableOptions} setEnableHelp={setEnableHelp}/>
         </div>
       ) : (
-        <div className='bg-amber-300 rounded-4xl h-[84vh] w-[45vh] justify-center items-center shadow-inner shadow-amber-700' tag="edge">
+        <div className='bg-amber-300 rounded-4xl h-[84vh] w-[45vh] justify-center items-center shadow-inner shadow-amber-700 z-10' tag="edge">
           <div className='flex justify-between items-center m-[5%] '>
             <div className="relative">
               <GameGrid/>
