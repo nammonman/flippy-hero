@@ -141,7 +141,6 @@ function AlertText({ text }) {
 function PlayerCharacter() {
   const { isWideScreen, isZoomed, playerDirection, playerPosition } = useGameState();
 
-
   const directionImage = {
     0: '/right.png',  
     90: '/down.png',  
@@ -149,7 +148,6 @@ function PlayerCharacter() {
     270: '/up.png',   
   };
   
-
   return (
     isZoomed && (
       <div 
