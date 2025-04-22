@@ -1,11 +1,11 @@
 {
   "headers": [
     {
-      "source": "/(.*)\\.(png|jpg|jpeg|gif|webp|svg)$",
+      "source": "/(.*).png",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "public, max-age=999999"
+          "value": "public, max-age=360000, immutable"
         }
       ]
     }
