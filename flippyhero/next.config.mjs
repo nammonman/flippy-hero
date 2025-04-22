@@ -8,10 +8,15 @@ const nextConfig = {
                     {
                         key: 'Cache-Control',
                         value: 'public, max-age=360000, immutable'
-                    },
+                    }
+                ]
+            },
+            {
+                source: '//(.*).png',
+                headers: [
                     {
-                        key: 'Age',
-                        value: '360000'
+                        key: 'Cache-Control',
+                        value: 'public, max-age=360000, immutable'
                     }
                 ]
             }
