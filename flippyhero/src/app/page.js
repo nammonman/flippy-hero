@@ -366,7 +366,7 @@ function DPad() {
         onMouseDown={() => startMove(270, 0, -2)}
         onMouseUp={stopMove}
         onMouseLeave={stopMove}
-        onTouchStart={() => startMove(90, 0, -2)}
+        onTouchStart={() => startMove(270, 0, -2)}
         onTouchEnd={stopMove}
         style={{ fontSize: 'calc(4vh)' }}
         disabled={!isZoomed}
