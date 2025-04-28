@@ -276,6 +276,7 @@ function DPad() {
 
   const pressTimeRef = useRef(null);
   const activeInputRef = useRef(null);
+  const currentSpeedRef = useRef(0);
   const canMoveRef = useRef(canMove);
   const playerDirectionRef = useRef(playerDirection);
   const cameraPositionRef = useRef(cameraPosition);
@@ -288,79 +289,87 @@ function DPad() {
   
 
   const startMove = (degrees, dx = 0, dy = 0) => {
-    setPlayerDirection(degrees);
-    setCanMove(true);
-    const maxSpeed = 0.8;
-    const acceleration = 0.08;
-    let currentSpeed = 0;
-    
-    pressTimeRef.current = setInterval(() => {
-      currentSpeed = Math.min(maxSpeed, currentSpeed + acceleration);
-      const adjustedDx = (dx / 2) * currentSpeed;
-      const adjustedDy = (dy / 2) * currentSpeed;
-      if (canMoveRef.current && currentSpeed > 0.2) {
-        const attackElement = document.querySelector(`[tag="atk1"]`);
-        //console.log(canMove);
-        if (attackElement && isOverEdge(attackElement)) {
-          
-          // teleport the player to the opposite side based on the direction
-          if (playerDirectionRef.current === 0) {
-            // r-l
-            if (cameraPositionRef.current.x < 9) {
-              setPlayerPosition((prev) => ({ ...prev, x: 7 }));
-              setCameraPosition((prev) => ({ ...prev, x: prev.x + 1 }));
-            }
-            else {
-              setCanMove(false)
-            }
-          } else if (playerDirectionRef.current === 180) {
-            // l-r
-            if (cameraPositionRef.current.x > 0) {
-              setPlayerPosition((prev) => ({ ...prev, x: 93 }));
-              setCameraPosition((prev) => ({ ...prev, x: prev.x - 1 }));
-            }
-            else {
-              setCanMove(false)
-            }
-            
-          } else if (playerDirectionRef.current === 90 ) {
-            // b-t
-            if (cameraPositionRef.current.y < 9) {
-              setPlayerPosition((prev) => ({ ...prev, y: 7 }));
-              setCameraPosition((prev) => ({ ...prev, y: prev.y + 1 }));
-            } else {
-              setCanMove(false)
-            }
-            
-          } else if (playerDirectionRef.current === 270 ) {
-            // t-b
-            if (cameraPositionRef.current.y > 0) {
-              setPlayerPosition((prev) => ({ ...prev, y: 93 }));
-              setCameraPosition((prev) => ({ ...prev, y: prev.y - 1 }));
-            } else {
-              setCanMove(false)
-            }
-              
-          }
-        }
-        setPlayerPosition(prev => ({
-          x: Math.max(0, Math.min(100, prev.x + adjustedDx)),
-          y: Math.max(0, Math.min(100, prev.y + adjustedDy))
-        }));
-      }
+    // stop before changing direction
+    if (currentSpeedRef.current > 0.01 && playerDirectionRef.current !== degrees) {
+      return;
+    }
+    if (!canMove && playerDirectionRef.current == degrees) {
+      return;
+    }
+    else {
+      setPlayerDirection(degrees);
+      setCanMove(true);
+      const maxSpeed = 0.8;
+      const acceleration = 0.08;
+      let currentSpeed = 0;
       
-    }, 16 );
-
+      pressTimeRef.current = setInterval(() => {
+        currentSpeed = Math.min(maxSpeed, currentSpeed + acceleration);
+        const adjustedDx = (dx / 2) * currentSpeed;
+        const adjustedDy = (dy / 2) * currentSpeed;
+        if (canMoveRef.current && currentSpeed > 0.2) {
+          const attackElement = document.querySelector(`[tag="atk1"]`);
+          //console.log(canMove);
+          if (attackElement && isOverEdge(attackElement)) {
+            
+            // teleport the player to the opposite side based on the direction
+            if (playerDirectionRef.current === 0) {
+              // r-l
+              if (cameraPositionRef.current.x < 9) {
+                setPlayerPosition((prev) => ({ ...prev, x: 7 }));
+                setCameraPosition((prev) => ({ ...prev, x: prev.x + 1 }));
+              }
+              else {
+                setCanMove(false)
+              }
+            } else if (playerDirectionRef.current === 180) {
+              // l-r
+              if (cameraPositionRef.current.x > 0) {
+                setPlayerPosition((prev) => ({ ...prev, x: 93 }));
+                setCameraPosition((prev) => ({ ...prev, x: prev.x - 1 }));
+              }
+              else {
+                setCanMove(false)
+              }
+              
+            } else if (playerDirectionRef.current === 90 ) {
+              // b-t
+              if (cameraPositionRef.current.y < 9) {
+                setPlayerPosition((prev) => ({ ...prev, y: 7 }));
+                setCameraPosition((prev) => ({ ...prev, y: prev.y + 1 }));
+              } else {
+                setCanMove(false)
+              }
+              
+            } else if (playerDirectionRef.current === 270 ) {
+              // t-b
+              if (cameraPositionRef.current.y > 0) {
+                setPlayerPosition((prev) => ({ ...prev, y: 93 }));
+                setCameraPosition((prev) => ({ ...prev, y: prev.y - 1 }));
+              } else {
+                setCanMove(false)
+              }
+                
+            }
+          }
+          setPlayerPosition(prev => ({
+            x: Math.max(0, Math.min(100, prev.x + adjustedDx)),
+            y: Math.max(0, Math.min(100, prev.y + adjustedDy))
+          }));
+        }
+        
+      }, 16 );
+    }
   };
 
   const stopMove = () => {
     clearInterval(pressTimeRef.current);
     pressTimeRef.current = null;
-    setCanMove(true)
+    currentSpeedRef.current = 0;
   };
 
   return (
-    <div className={`relative w-[32vh] left-0 flex flex-col items-center sm:text-xl text-2xl font-black`}>
+    <div draggable="false" className={`relative w-[32vh] left-0 flex flex-col items-center sm:text-xl text-2xl font-black `}>
       <button 
         className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}
         onMouseDown={() => startMove(270, 0, -2)}
@@ -370,8 +379,9 @@ function DPad() {
         onTouchEnd={stopMove}
         style={{ fontSize: 'calc(4vh)' }}
         disabled={!isZoomed}
+        draggable="false"
       >🠉</button>
-      <div className="flex">
+      <div draggable="false" className="flex">
         <button 
           className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}
           onMouseDown={() => startMove(180, -2, 0)}
@@ -381,8 +391,9 @@ function DPad() {
           onTouchEnd={stopMove}
           style={{ fontSize: 'calc(4vh)' }}
           disabled={!isZoomed}
+          draggable="false"
         >🠈</button>
-        <div className={`relative z-10 ${btnSize} bg-gray-500 text-center`}></div>
+        <div draggable="false" className={`relative z-10 ${btnSize} bg-gray-500 text-center`}></div>
         <button 
           className={`relative ${btnSize} bg-gray-500 rounded shadow-amber-900 shadow-md active:shadow-sm`}
           onMouseDown={() => startMove(0, 2, 0)}
@@ -392,6 +403,7 @@ function DPad() {
           onTouchEnd={stopMove}
           style={{ fontSize: 'calc(4vh)' }}
           disabled={!isZoomed}
+          draggable="false"
         >🠊</button>
       </div>
       <button 
@@ -403,6 +415,7 @@ function DPad() {
         onTouchEnd={stopMove}
         style={{ fontSize: 'calc(4vh)' }}
         disabled={!isZoomed}
+        draggable="false"
       >🠋</button>
     </div>
   );
