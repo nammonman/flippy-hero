@@ -142,10 +142,10 @@ function PlayerCharacter() {
   const { isWideScreen, isZoomed, playerDirection, playerPosition } = useGameState();
 
   const directionImage = {
-    0: '/right.png',  
-    90: '/down.png',  
-    180: '/left.png', 
-    270: '/up.png',   
+    0: 'right.png',  
+    90: 'down.png',  
+    180: 'left.png', 
+    270: 'up.png',   
   };
   
   return (
@@ -366,7 +366,7 @@ function DPad() {
         onMouseDown={() => startMove(270, 0, -2)}
         onMouseUp={stopMove}
         onMouseLeave={stopMove}
-        onTouchStart={() => startMove(90, 0, -2)}
+        onTouchStart={() => startMove(270, 0, -2)}
         onTouchEnd={stopMove}
         style={{ fontSize: 'calc(4vh)' }}
         disabled={!isZoomed}
